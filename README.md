@@ -94,6 +94,8 @@ cd frontend
 npm run build
 ```
 
+Para importar las pruebas en Postman, selecciona **Import** y abre `docs/postman/Inventario-Almacen.postman_collection.json` junto con `docs/postman/Inventario-Local.postman_environment.json`; activa el entorno `Inventario-Local`. La colección está en formato v2.1 y sus 20 aserciones pasaron con Newman. El resultado se guarda en `docs/evidencias/newman-resultado.txt`.
+
 Las pruebas unitarias de los servicios usan Mockito y no necesitan MySQL. La prueba de humo y Newman sí necesitan MySQL, Eureka y los servicios arriba. El build de frontend se ejecutó correctamente. En la última ejecución, `mvnw test` terminó en BUILD SUCCESS con 15 pruebas; el resumen queda en `docs/evidencias/mvn-test.txt`.
 
 ## 11. Perfiles `dev`, `test` y `prod` (A-69)
