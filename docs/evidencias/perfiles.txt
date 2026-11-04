@@ -1,0 +1,7 @@
+Config Server comprobado el 2026-11-04 con `GET /producto-service/{perfil}`. Respondió HTTP 200 y el perfil correcto en los tres casos:
+
+- `dev`: `jdbc:mysql://localhost:3306/bd_producto...`, `ddl-auto=update`.
+- `test`: `jdbc:mysql://localhost:3306/bd_producto_test...`, `ddl-auto=create-drop`.
+- `prod`: URL configurada para `${DB_URL:...}`, `ddl-auto=validate`.
+
+Esto verifica la entrega de YAML remoto, no el arranque real de producto-service en cada perfil. La comprobación de logs de servicio y base conectada sigue pendiente porque MySQL no respondió en localhost:3306 durante esta ejecución.

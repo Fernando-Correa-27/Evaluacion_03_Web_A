@@ -1,0 +1,1 @@
+Pendiente: ejecutar `npx newman run docs/postman/Inventario-Almacen.postman_collection.json -e docs/postman/Inventario-Local.postman_environment.json` cuando todos los servicios y MySQL estén activos. No se inventan resultados de Newman.

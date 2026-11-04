@@ -1,0 +1,10 @@
+Pendiente de generar en el equipo del estudiante: MySQL 8.4 local no respondió en localhost:3306 durante esta ejecución. No se ha simulado ni inventado una salida de `SHOW DATABASES`.
+
+Cuando MySQL esté activo, ejecutar consultas:
+  SHOW DATABASES LIKE 'bd_%';
+  SHOW TABLES FROM bd_proveedor;
+  SHOW TABLES FROM bd_producto;
+  SHOW TABLES FROM bd_movimiento;
+  SELECT COUNT(*) FROM bd_proveedor.proveedor;
+  SELECT COUNT(*) FROM bd_producto.producto;
+  SELECT COUNT(*) FROM bd_movimiento.movimiento;
