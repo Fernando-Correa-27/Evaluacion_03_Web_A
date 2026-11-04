@@ -1,0 +1,10 @@
+Diagnóstico y corrección (2026-11-04)
+
+- La pantalla blanca se debía a tres `useEffect(load, [])`: `load` devuelve una promesa y React la interpretaba como una función de limpieza. En StrictMode, el desmontaje producía `TypeError: destroy is not a function`. Los efectos ahora llaman a `load` sin retornar la promesa.
+- El cliente Axios omitía el prefijo `/api`, necesario para las rutas del Gateway. La URL base ahora agrega `/api`.
+- El Gateway ofrece la interfaz en `/` mediante un fallback a Vite; las rutas `/api/**` conservan prioridad.
+- `scripts/start-all.ps1` espera el estado UP de cada servicio en Eureka antes de iniciar su consumidor, reduciendo respuestas 503 durante el arranque.
+
+Comprobaciones posteriores: compilación Maven BUILD SUCCESS; `npm run build` correcto; HTML y módulos JavaScript responden HTTP 200 tanto en localhost:5173 como en localhost:8080; proveedores, productos, movimientos y stock responden HTTP 200 vía Gateway; smoke test completo; Newman con 20 aserciones y cero fallos.
+
+Después de estos cambios, recarga la pestaña con Ctrl+R.

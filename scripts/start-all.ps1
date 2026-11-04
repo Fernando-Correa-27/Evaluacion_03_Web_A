@@ -35,13 +35,28 @@ function Start-ServiceProcess([string]$Name,[string]$Jar,[int]$Port) {
   }
   throw "$Name no alcanzó estado UP en 60 segundos. Revisa logs/$Name*.log"
 }
+function Wait-EurekaUp([string]$Application) {
+  for ($i=0; $i -lt 20; $i++) {
+    try {
+      $registry = [xml](Invoke-WebRequest 'http://localhost:8761/eureka/apps' -Headers @{Accept='application/xml'} -TimeoutSec 2).Content
+      $registered = @($registry.applications.application | Where-Object { $_.name -eq $Application -and @($_.instance | Where-Object { $_.status -eq 'UP' }).Count -gt 0 })
+      if ($registered.Count -gt 0) { Write-Host "$Application registrado UP en Eureka"; return }
+    } catch {}
+    Start-Sleep -Seconds 1
+  }
+  throw "$Application no se registró UP en Eureka. Revisa logs/eureka-server.log."
+}
 try {
   Start-ServiceProcess 'config-server' 'config-server/target/config-server-0.0.1-SNAPSHOT.jar' 8888
   Start-ServiceProcess 'eureka-server' 'eureka-server/target/eureka-server-0.0.1-SNAPSHOT.jar' 8761
   Start-ServiceProcess 'proveedor-service' 'proveedor-service/target/proveedor-service-0.0.1-SNAPSHOT.jar' 8081
+  Wait-EurekaUp 'PROVEEDOR-SERVICE'
   Start-ServiceProcess 'producto-service' 'producto-service/target/producto-service-0.0.1-SNAPSHOT.jar' 8082
+  Wait-EurekaUp 'PRODUCTO-SERVICE'
   Start-ServiceProcess 'movimiento-service' 'movimiento-service/target/movimiento-service-0.0.1-SNAPSHOT.jar' 8083
+  Wait-EurekaUp 'MOVIMIENTO-SERVICE'
   Start-ServiceProcess 'api-gateway' 'api-gateway/target/api-gateway-0.0.1-SNAPSHOT.jar' 8080
+  Wait-EurekaUp 'API-GATEWAY'
   $node = (Get-Command node.exe).Source
   $vite = Join-Path $root 'frontend/node_modules/vite/bin/vite.js'
   $ui = Start-Process -FilePath $node -ArgumentList @($vite,'--host','127.0.0.1','--port','5173') -WorkingDirectory (Join-Path $root 'frontend') -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $root 'logs/frontend.log') -RedirectStandardError (Join-Path $root 'logs/frontend-error.log')

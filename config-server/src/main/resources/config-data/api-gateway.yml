@@ -18,6 +18,11 @@ spring:
               uri: lb://movimiento-service
               predicates:
                 - Path=/api/movimientos/**
+            - id: frontend-local
+              uri: http://localhost:5173
+              order: 100
+              predicates:
+                - Path=/**
           globalcors:
             cors-configurations:
               '[/**]':

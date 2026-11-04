@@ -157,7 +157,9 @@ function Dashboard() {
         setError("");
       })
       .catch((e) => setError(errText(e)));
-  useEffect(load, []);
+  useEffect(() => {
+    void load();
+  }, []);
   if (!d)
     return (
       <>
@@ -298,7 +300,9 @@ function Suppliers() {
       .catch((e) => setError(errText(e)))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  useEffect(() => {
+    void load();
+  }, []);
   const save = async (e) => {
     e.preventDefault();
     setError("");
@@ -470,7 +474,9 @@ function Products() {
       .catch((e) => setError(errText(e)))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  useEffect(() => {
+    void load();
+  }, []);
   const save = async (e) => {
     e.preventDefault();
     setError("");

@@ -1,4 +1,4 @@
 Ejecución: npm run build
 Fecha: 2026-11-04
 Resultado: éxito con Vite 8.3.5; 83 módulos transformados.
-Assets generados: index.html (0.55 kB), CSS (8.07 kB) y JS (333.32 kB).
+Assets generados: index.html (0.55 kB), CSS (8.07 kB) y JS (333.37 kB).

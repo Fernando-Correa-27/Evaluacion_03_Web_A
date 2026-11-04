@@ -14,7 +14,7 @@ Sistema de inventario con catálogo de proveedores, catálogo de productos y reg
 
 ## 3. Arquitectura
 
-El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: tres servicios de dominio, Eureka, Config Server, Gateway y frontend. El navegador solo llama al Gateway. Producto consulta Proveedor por REST/Feign; Movimiento consulta Producto. Cada dominio accede a su única base, sin tablas compartidas ni claves foráneas entre bases. La separación mantiene el historial de movimientos independiente del catálogo. El PNG se regenera con `npm install` y `npm run render:diagram` desde la raíz.
+El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: tres servicios de dominio, Eureka, Config Server, Gateway y frontend. El navegador usa el Gateway; sus rutas `/api/**` van a los microservicios y su ruta de fallback sirve el frontend Vite local. También se puede abrir directamente `http://localhost:5173`. Producto consulta Proveedor por REST/Feign; Movimiento consulta Producto. Cada dominio accede a su única base, sin tablas compartidas ni claves foráneas entre bases. La separación mantiene el historial de movimientos independiente del catálogo. El PNG se regenera con `npm install` y `npm run render:diagram` desde la raíz.
 
 ## 4. Tecnologías y versiones
 
@@ -166,6 +166,7 @@ No se implementa autenticación. La lectura y escritura simultánea no usa bloqu
 - **Puerto ocupado:** `start-all.ps1` reporta el puerto y PID, pero no cierra procesos ajenos.
 - **Config Server no disponible:** su import es opcional para permitir pruebas unitarias; en ejecución completa debe responder en `:8888` antes de Eureka y los servicios.
 - **Eureka tarda:** espera a que los seis servicios respondan health; revisa `logs/eureka-server.log` y el panel `:8761`.
+- **Frontend en blanco:** recarga `http://localhost:8080/` o `http://localhost:5173/`; el cliente Axios usa `/api` y el arranque espera los registros UP de Eureka antes de iniciar la interfaz. Evidencia de diagnóstico: `docs/evidencias/correccion-interfaz.txt`.
 - **JAVA_HOME:** instala un JDK 17+ y comprueba `java -version` y `JAVA_HOME`; Maven Wrapper no requiere Maven global.
 
 ## Estado del entregable

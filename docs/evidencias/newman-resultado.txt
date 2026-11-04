@@ -1,4 +1,4 @@
-(node:20184) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(node:18324) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
 (Use `node --trace-deprecation ...` to show where the warning was created)
 newman
 
@@ -6,12 +6,12 @@ Inventario-Almacen
 
 □ Proveedores
 └ Crear proveedor
-  POST http://localhost:8080/api/proveedores [201 Created, 450B, 51ms]
+  POST http://localhost:8080/api/proveedores [201 Created, 450B, 49ms]
   √  Creado con 201
   √  Incluye id y documento
 
 └ Obtener proveedor
-  GET http://localhost:8080/api/proveedores/11 [200 OK, 399B, 16ms]
+  GET http://localhost:8080/api/proveedores/17 [200 OK, 399B, 15ms]
   √  Proveedor encontrado
   √  Proveedor activo
 
@@ -21,64 +21,64 @@ Inventario-Almacen
 
 □ Productos
 └ Crear producto
-  POST http://localhost:8080/api/productos [201 Created, 474B, 38ms]
+  POST http://localhost:8080/api/productos [201 Created, 476B, 31ms]
   √  Producto creado con 201
   √  Incluye SKU y proveedor
 
 └ Producto inexistente (404)
-  GET http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 50ms]
+  GET http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 14ms]
   √  No encontrado 404
   √  Error JSON
 
 □ Movimientos
 └ Registrar entrada 100
-  POST http://localhost:8080/api/movimientos [201 Created, 374B, 341ms]
+  POST http://localhost:8080/api/movimientos [201 Created, 375B, 32ms]
   √  Entrada 201
   √  Cantidad registrada
 
 └ Registrar salida 30
-  POST http://localhost:8080/api/movimientos [201 Created, 371B, 114ms]
+  POST http://localhost:8080/api/movimientos [201 Created, 372B, 35ms]
   √  Salida 201
 
 └ Stock esperado 70
-  GET http://localhost:8080/api/movimientos/producto/9/stock [200 OK, 340B, 29ms]
+  GET http://localhost:8080/api/movimientos/producto/13/stock [200 OK, 341B, 32ms]
   √  Consulta 200
   √  Stock 70
 
 └ Cantidad cero (400)
-  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 67ms]
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 11ms]
   √  Validación 400
   √  Campo cantidad reportado
 
 └ Cantidad negativa (400)
-  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 13ms]
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 12ms]
   √  Validación 400
 
 └ Salida mayor al stock (422)
-  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 395B, 28ms]
+  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 394B, 28ms]
   √  Stock insuficiente 422
 
 └ Historial (2 movimientos)
-  GET http://localhost:8080/api/movimientos/producto/9 [200 OK, 448B, 85ms]
+  GET http://localhost:8080/api/movimientos/producto/13 [200 OK, 450B, 25ms]
   √  Historial 200
   √  Dos movimientos
 
-┌─────────────────────────┬───────────────────┬───────────────────┐
-│                         │          executed │            failed │
-├─────────────────────────┼───────────────────┼───────────────────┤
-│              iterations │                 1 │                 0 │
-├─────────────────────────┼───────────────────┼───────────────────┤
-│                requests │                12 │                 0 │
-├─────────────────────────┼───────────────────┼───────────────────┤
-│            test-scripts │                12 │                 0 │
-├─────────────────────────┼───────────────────┼───────────────────┤
-│      prerequest-scripts │                12 │                 0 │
-├─────────────────────────┼───────────────────┼───────────────────┤
-│              assertions │                20 │                 0 │
-├─────────────────────────┴───────────────────┴───────────────────┤
-│ total run duration: 1868ms                                      │
-├─────────────────────────────────────────────────────────────────┤
-│ total data received: 2.24kB (approx)                            │
-├─────────────────────────────────────────────────────────────────┤
-│ average response time: 70ms [min: 13ms, max: 341ms, s.d.: 86ms] │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                20 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 1332ms                                     │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 2.25kB (approx)                           │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 24ms [min: 11ms, max: 49ms, s.d.: 11ms] │
+└────────────────────────────────────────────────────────────────┘

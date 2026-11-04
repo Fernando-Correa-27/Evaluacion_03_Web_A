@@ -1,10 +1,4 @@
-Compilación ejecutada el 2026-11-04: .\mvnw.cmd -DskipTests package
-Resultado: BUILD SUCCESS para el reactor de siete módulos.
-- config-server: SUCCESS
-- eureka-server: SUCCESS
-- api-gateway: SUCCESS
-- proveedor-service: SUCCESS
-- producto-service: SUCCESS
-- movimiento-service: SUCCESS
-Los seis artefactos ejecutables Spring Boot se generaron en sus directorios target/.
-Frontend: npm run build (Vite 8.3.5) completó correctamente y transformó 83 módulos.
+Ejecución: .\mvnw.cmd -DskipTests package
+Fecha: 2026-11-04 17:42 (hora local)
+Resultado: BUILD SUCCESS para los siete módulos del reactor; se generaron los seis JAR ejecutables Spring Boot.
+Frontend: npm run build, Vite 8.3.5, 83 módulos transformados, BUILD SUCCESS.
