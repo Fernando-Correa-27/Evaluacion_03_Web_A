@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "render:diagram": "mmdc -i docs/diagrama-microservicios.mmd -o docs/diagrama-microservicios.png -b white -t neutral"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^12.2.0"
+  }
+}

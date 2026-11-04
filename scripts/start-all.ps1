@@ -2,6 +2,15 @@ param([switch]$SkipBuild)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+$envFile = Join-Path $root '.env'
+if (Test-Path -LiteralPath $envFile) {
+  foreach ($line in Get-Content -LiteralPath $envFile) {
+    if ($line -match '^\s*(DB_USERNAME|DB_PASSWORD|DB_URL|SPRING_PROFILES_ACTIVE)\s*=\s*(.*)\s*$') {
+      $value = $Matches[2].Trim().Trim('"').Trim("'")
+      [Environment]::SetEnvironmentVariable($Matches[1], $value, 'Process')
+    }
+  }
+}
 $activeProfile = if ($env:SPRING_PROFILES_ACTIVE) { $env:SPRING_PROFILES_ACTIVE } else { 'dev' }
 if ($activeProfile -notin @('dev','test','prod')) { throw 'SPRING_PROFILES_ACTIVE debe ser dev, test o prod.' }
 if (-not $env:DB_USERNAME -or -not $env:DB_PASSWORD) { throw "Define DB_USERNAME y DB_PASSWORD como variables de entorno antes de iniciar el perfil $activeProfile." }
@@ -14,7 +23,10 @@ if (-not $SkipBuild) { & .\mvnw.cmd -q -DskipTests package; if ($LASTEXITCODE -n
 $pids = [System.Collections.Generic.List[object]]::new()
 function Start-ServiceProcess([string]$Name,[string]$Jar,[int]$Port) {
   $path = Join-Path $root $Jar
-  $process = Start-Process -FilePath 'java' -ArgumentList @('-jar',"`"$path`"","--spring.profiles.active=$activeProfile") -WorkingDirectory $root -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $root "logs/$Name.log") -RedirectStandardError (Join-Path $root "logs/$Name-error.log")
+  $javaArgs = @('-jar',"`"$path`"")
+  if ($Name -eq 'config-server') { $javaArgs += '--spring.profiles.active=native' }
+  else { $javaArgs += "--spring.profiles.active=$activeProfile" }
+  $process = Start-Process -FilePath 'java' -ArgumentList $javaArgs -WorkingDirectory $root -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $root "logs/$Name.log") -RedirectStandardError (Join-Path $root "logs/$Name-error.log")
   $script:pids.Add([pscustomobject]@{name=$Name;pid=$process.Id;port=$Port})
   for ($i=0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 1

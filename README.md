@@ -14,7 +14,7 @@ Sistema de inventario con catálogo de proveedores, catálogo de productos y reg
 
 ## 3. Arquitectura
 
-El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: tres servicios de dominio, Eureka, Config Server, Gateway y frontend. El navegador solo llama al Gateway. Producto consulta Proveedor por REST/Feign; Movimiento consulta Producto. Cada dominio accede a su única base, sin tablas compartidas ni claves foráneas entre bases. La separación mantiene el historial de movimientos independiente del catálogo.
+El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: tres servicios de dominio, Eureka, Config Server, Gateway y frontend. El navegador solo llama al Gateway. Producto consulta Proveedor por REST/Feign; Movimiento consulta Producto. Cada dominio accede a su única base, sin tablas compartidas ni claves foráneas entre bases. La separación mantiene el historial de movimientos independiente del catálogo. El PNG se regenera con `npm install` y `npm run render:diagram` desde la raíz.
 
 ## 4. Tecnologías y versiones
 
@@ -22,6 +22,7 @@ El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: t
 - Spring Boot 4.1.2 y Spring Cloud 2025.1.4 (Oakwood), alineados según la [tabla oficial de compatibilidad de Spring Cloud](https://spring.io/projects/spring-cloud/).
 - Maven Wrapper generado por Spring Initializr; Spring Data JPA, Hibernate, MySQL Connector/J, Jakarta Validation, Actuator, DevTools, Eureka, Config Server, OpenFeign y Gateway WebFlux.
 - React 19, Vite 8, React Router y Axios.
+- Mermaid CLI 12.2.0 para exportar el diagrama.
 - El identificador del starter Gateway reciente es `spring-cloud-starter-gateway-server-webflux`, según la [documentación oficial](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webflux/starter.html).
 
 ## 5. Requisitos previos
@@ -54,13 +55,13 @@ El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: t
 | `SPRING_PROFILES_ACTIVE` | Perfil de configuración (`dev`, `test` o `prod`) |
 | `VITE_API_URL` | URL del Gateway en el frontend; valor predeterminado `http://localhost:8080` |
 
-Copia `.env.example` como referencia. Spring Boot no carga `.env` automáticamente: define `DB_USERNAME` y `DB_PASSWORD` en la sesión de PowerShell que ejecutará los servicios. No agregues valores reales a archivos versionados.
+Copia `.env.example` como `.env` y completa las credenciales localmente. `scripts/start-all.ps1` importa desde ahí `DB_USERNAME`, `DB_PASSWORD`, `DB_URL` y `SPRING_PROFILES_ACTIVE`; también puedes definirlas en la sesión PowerShell. `.env` está ignorado por Git; no agregues valores reales a archivos versionados.
 
 ## 8. Crear las bases
 
 En MySQL Workbench o MySQL Command Line Client, ejecuta en orden `database/01-crear-bases.sql`, `02-esquema-proveedor.sql`, `03-esquema-producto.sql` y `04-esquema-movimiento.sql`. El script inicial crea las tres bases. El usuario `almacen_app` es opcional; antes de ejecutar ese bloque, reemplaza `CAMBIAR_ESTA_CLAVE` por una clave propia y guárdala como variable de entorno, no en Git. Si solo se crean las bases, configura las credenciales de un usuario MySQL que tenga permisos sobre ellas.
 
-Las tablas SQL se escribieron para coincidir con las entidades y restricciones. **La comprobación con `SHOW CREATE TABLE` y `ddl-auto: validate` sigue pendiente**, porque MySQL no respondió en el equipo durante esta ejecución. Antes de entregar, verifica los tipos reales y deja la salida en `docs/evidencias/bases-de-datos.txt`.
+Las tablas se comprobaron en MySQL 8.4.9 con `SHOW CREATE TABLE` y conteos al terminar las pruebas; el perfil `prod` de `producto-service` arrancó con `ddl-auto: validate` contra `bd_producto`. Los perfiles `test` y `prod` también se arrancaron y conectaron a sus bases respectivas. La salida está en `docs/evidencias/bases-de-datos.txt` y `docs/evidencias/perfiles.txt`.
 
 ## 9. Ejecución en Windows
 
@@ -154,7 +155,7 @@ El campo `fecha` es opcional; si se omite el servicio asigna la hora local. La c
 
 ## 14. Limitaciones y mejoras futuras
 
-No se implementa autenticación. La lectura y escritura simultánea no usa bloqueo de saldo; dos salidas concurrentes pueden leer el mismo stock. No hay transacciones distribuidas entre servicios ni circuit breaker. La prueba de caída de Producto responde 503 debe completarse cuando se pueda iniciar la infraestructura.
+No se implementa autenticación. La lectura y escritura simultánea no usa bloqueo de saldo; dos salidas concurrentes pueden leer el mismo stock. No hay transacciones distribuidas entre servicios ni circuit breaker.
 
 ## 15. Solución de problemas
 
@@ -167,4 +168,6 @@ No se implementa autenticación. La lectura y escritura simultánea no usa bloqu
 
 ## Estado del entregable
 
-El esqueleto Maven, configuración central, Eureka, CRUD/stock, frontend y documentación base están en el repositorio. El build del frontend y pruebas unitarias ejecutadas pasaron. Falta arrancar MySQL y ejecutar la verificación integral de SQL, los perfiles con bases reales, Eureka completo, smoke test, Newman y capturas. Completa la sección, revisa las conclusiones y sustituye/añade evidencias reales antes de presentar.
+MySQL temporal 8.4.9 está activo en `127.0.0.1:3306`, con datos en `%TEMP%\codex-mysql-inventory-20261104`; el usuario de aplicación y contraseña residen únicamente en el `.env` local ignorado por Git. Para iniciar MySQL después de cerrar esta sesión, ejecuta `mysqld.exe` con ese directorio de datos, `--bind-address=127.0.0.1` y `--port=3306`. La instancia es temporal y no está registrada como servicio de Windows.
+
+La ejecución validada incluye build de frontend, 15 pruebas unitarias, smoke test completo, Newman (20 aserciones, 0 fallos), Config Server, los cuatro clientes UP en Eureka, y arranque real de `producto-service` en perfiles dev, test y prod. Mermaid CLI 12.2.0 renderiza el diagrama PNG. Antes de presentar, el estudiante debe completar la sección, realizar sus capturas de Postman y revisar el borrador de conclusiones y sustentación.

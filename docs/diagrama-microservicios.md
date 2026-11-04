@@ -1,24 +1,33 @@
 # Arquitectura del inventario
 
 ```mermaid
-flowchart LR
+flowchart TB
   UI[Frontend React :5173] -->|HTTP /api| GW[API Gateway :8080]
-  GW -->|Eureka lb://| PS[proveedor-service :8081]
-  GW -->|Eureka lb://| PR[producto-service :8082]
-  GW -->|Eureka lb://| MS[movimiento-service :8083]
-  PR -->|REST + Feign| PS
-  MS -->|REST + Feign| PR
-  PS --> DB1[(MySQL bd_proveedor)]
-  PR --> DB2[(MySQL bd_producto)]
-  MS --> DB3[(MySQL bd_movimiento)]
-  CFG[Config Server :8888] -. YAML por perfil .-> GW
-  CFG -. YAML por perfil .-> PS
-  CFG -. YAML por perfil .-> PR
-  CFG -. YAML por perfil .-> MS
-  ES[Eureka Server :8761] -. registro y descubrimiento .-> GW
-  ES -. registro y descubrimiento .-> PS
-  ES -. registro y descubrimiento .-> PR
-  ES -. registro y descubrimiento .-> MS
+
+  subgraph DOMAIN[Servicios de dominio]
+    direction LR
+    PS[proveedor-service :8081]
+    PR[producto-service :8082]
+    MS[movimiento-service :8083]
+    PS --> DB1[(MySQL bd_proveedor)]
+    PR --> DB2[(MySQL bd_producto)]
+    MS --> DB3[(MySQL bd_movimiento)]
+    PR -->|REST + Feign| PS
+    MS -->|REST + Feign| PR
+  end
+
+  GW -->|Eureka lb://| PS
+  GW -->|Eureka lb://| PR
+  GW -->|Eureka lb://| MS
+
+  subgraph PLATFORM[Infraestructura]
+    direction LR
+    CFG[Config Server :8888]
+    ES[Eureka Server :8761]
+  end
+
+  CFG -. YAML por perfil .-> DOMAIN
+  ES -. registro y descubrimiento .-> DOMAIN
 ```
 
 | Servicio | Puerto | Responsabilidad | Datos propios |

@@ -1,7 +1,16 @@
-Config Server comprobado el 2026-11-04 con `GET /producto-service/{perfil}`. Respondió HTTP 200 y el perfil correcto en los tres casos:
+[test] health=UP
+2026-11-04T17:13:12.538-05:00  INFO 25052 --- [producto-service] [           main] c.a.producto.ProductoServiceApplication  : The following 1 profile is active: "test"
+	Database JDBC URL [jdbc:mysql://localhost:3306/bd_producto_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=utf8]
+	Database version: 8.4.9
+2026-11-04T17:13:21.419-05:00  INFO 25052 --- [producto-service] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18082 (http) with context path '/'
+[prod] health=UP
+2026-11-04T17:13:30.110-05:00  INFO 20056 --- [producto-service] [           main] c.a.producto.ProductoServiceApplication  : The following 1 profile is active: "prod"
+	Database JDBC URL [jdbc:mysql://localhost:3306/bd_producto?serverTimezone=America/Bogota&characterEncoding=utf8]
+	Database version: 8.4.9
+2026-11-04T17:13:39.198-05:00  INFO 20056 --- [producto-service] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18083 (http) with context path '/'
 
-- `dev`: `jdbc:mysql://localhost:3306/bd_producto...`, `ddl-auto=update`.
-- `test`: `jdbc:mysql://localhost:3306/bd_producto_test...`, `ddl-auto=create-drop`.
-- `prod`: URL configurada para `${DB_URL:...}`, `ddl-auto=validate`.
-
-Esto verifica la entrega de YAML remoto, no el arranque real de producto-service en cada perfil. La comprobación de logs de servicio y base conectada sigue pendiente porque MySQL no respondió en localhost:3306 durante esta ejecución.
+Valores remotos confirmados por GET /producto-service/{perfil} en Config Server:
+- dev: jdbc:mysql://localhost:3306/bd_producto... — ddl-auto=update
+- test: jdbc:mysql://localhost:3306/bd_producto_test... — ddl-auto=create-drop
+- prod: jdbc:mysql://localhost:3306/bd_producto... (DB_URL permite personalizarla) — ddl-auto=validate
+dev arrancó en el puerto asignado 8082; test y prod respondieron health=UP en puertos temporales 18082 y 18083. Los registros de arranque muestran la conexión MySQL 8.4.9. El perfil test fue cerrado al terminar para que Hibernate aplique create-drop.

@@ -1,7 +1,7 @@
 {
   "info": {"_postman_id":"a9ff4bd3-1819-478d-8572-a128a3f09308","name":"Inventario-Almacen","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
   "variable": [{"key":"documento","value":""},{"key":"codigo","value":""},{"key":"proveedorId","value":""},{"key":"productoId","value":""}],
-  "event": [{"listen":"prerequest","script":{"type":"text/javascript","exec":["if (!pm.collectionVariables.get('documento')) pm.collectionVariables.set('documento', 'POSTMAN-' + Date.now());","if (!pm.collectionVariables.get('codigo')) pm.collectionVariables.set('codigo', 'SKU-' + Date.now());"]}}],
+  "event": [{"listen":"prerequest","script":{"type":"text/javascript","exec":["if (!pm.collectionVariables.get('documento')) pm.collectionVariables.set('documento', 'PM-' + Date.now().toString().slice(-8));","if (!pm.collectionVariables.get('codigo')) pm.collectionVariables.set('codigo', 'SKU-' + Date.now().toString().slice(-8));"]}}],
   "item": [
     {"name":"Proveedores","item":[
       {"name":"Crear proveedor","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"documento\": \"{{documento}}\",\n  \"razonSocial\": \"Proveedor Postman\",\n  \"email\": \"postman@example.test\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/proveedores","host":["{{baseUrl}}"],"path":["api","proveedores"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Creado con 201', () => pm.response.to.have.status(201));","const body = pm.response.json();","pm.test('Incluye id y documento', () => { pm.expect(body.id).to.exist; pm.expect(body.documento).to.eql(pm.collectionVariables.get('documento')); });","pm.collectionVariables.set('proveedorId', body.id);"]}}]},

@@ -1,1 +1,84 @@
-Pendiente: ejecutar `npx newman run docs/postman/Inventario-Almacen.postman_collection.json -e docs/postman/Inventario-Local.postman_environment.json` cuando todos los servicios y MySQL estén activos. No se inventan resultados de Newman.
+(node:6032) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+Inventario-Almacen
+
+□ Proveedores
+└ Crear proveedor
+  POST http://localhost:8080/api/proveedores [201 Created, 448B, 44ms]
+  √  Creado con 201
+  √  Incluye id y documento
+
+└ Obtener proveedor
+  GET http://localhost:8080/api/proveedores/7 [200 OK, 398B, 15ms]
+  √  Proveedor encontrado
+  √  Proveedor activo
+
+└ Documento duplicado (409)
+  POST http://localhost:8080/api/proveedores [409 Conflict, 377B, 13ms]
+  √  Conflicto 409
+
+□ Productos
+└ Crear producto
+  POST http://localhost:8080/api/productos [201 Created, 473B, 33ms]
+  √  Producto creado con 201
+  √  Incluye SKU y proveedor
+
+└ Producto inexistente (404)
+  GET http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 12ms]
+  √  No encontrado 404
+  √  Error JSON
+
+□ Movimientos
+└ Registrar entrada 100
+  POST http://localhost:8080/api/movimientos [201 Created, 372B, 30ms]
+  √  Entrada 201
+  √  Cantidad registrada
+
+└ Registrar salida 30
+  POST http://localhost:8080/api/movimientos [201 Created, 371B, 33ms]
+  √  Salida 201
+
+└ Stock esperado 70
+  GET http://localhost:8080/api/movimientos/producto/6/stock [200 OK, 340B, 25ms]
+  √  Consulta 200
+  √  Stock 70
+
+└ Cantidad cero (400)
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 10ms]
+  √  Validación 400
+  √  Campo cantidad reportado
+
+└ Cantidad negativa (400)
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 12ms]
+  √  Validación 400
+
+└ Salida mayor al stock (422)
+  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 395B, 24ms]
+  √  Stock insuficiente 422
+
+└ Historial (2 movimientos)
+  GET http://localhost:8080/api/movimientos/producto/6 [200 OK, 447B, 20ms]
+  √  Historial 200
+  √  Dos movimientos
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                12 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                20 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 1305ms                                     │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 2.24kB (approx)                           │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 22ms [min: 10ms, max: 44ms, s.d.: 10ms] │
+└────────────────────────────────────────────────────────────────┘

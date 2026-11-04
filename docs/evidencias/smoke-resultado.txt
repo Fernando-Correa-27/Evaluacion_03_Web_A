@@ -1,0 +1,3 @@
+Prueba de humo ejecutada el 2026-11-04 contra http://localhost:8080.
+Resultado: completa, código de salida 0.
+Comprobó altas de proveedor/producto, entrada 100, salida 30, stock final 70, cantidad 0 y negativa (400), stock insuficiente (422), referencias inexistentes (404), duplicados (409), referencias inactivas (422), historial y cuatro aplicaciones UP en Eureka.

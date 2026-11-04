@@ -1,0 +1,3 @@
+Prueba realizada el 2026-11-04 con movimiento-service y Gateway activos. Se detuvo temporalmente el PID propio de producto-service.
+POST http://localhost:8080/api/movimientos con una entrada válida -> HTTP 503.
+Respuesta: {"error":"Service Unavailable","message":"No fue posible consultar producto-service"}.
