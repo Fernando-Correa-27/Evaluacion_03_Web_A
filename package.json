@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "render:diagram": "mmdc -i docs/diagrama-microservicios.mmd -o docs/diagrama-microservicios.png -b white -t neutral"
+    "render:diagram": "mmdc -i docs/diagrama-microservicios.mmd -o docs/diagrama-microservicios.png -b white -t neutral",
+    "export:postman": "node scripts/export-postman.mjs"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^12.2.0"

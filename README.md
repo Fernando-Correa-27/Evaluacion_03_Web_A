@@ -90,11 +90,12 @@ Los procesos Java se levantan en segundo plano y cada uno debe responder `/actua
 .\mvnw.cmd test
 .\scripts\smoke-test.ps1
 npx newman run docs/postman/Inventario-Almacen.postman_collection.json -e docs/postman/Inventario-Local.postman_environment.json
+npm run export:postman
 cd frontend
 npm run build
 ```
 
-Para importar las pruebas en Postman, selecciona **Import** y abre `docs/postman/Inventario-Almacen.postman_collection.json` junto con `docs/postman/Inventario-Local.postman_environment.json`; activa el entorno `Inventario-Local`. La colección está en formato v2.1 y sus 20 aserciones pasaron con Newman. El resultado se guarda en `docs/evidencias/newman-resultado.txt`.
+Para exportar de nuevo los JSON ejecuta `npm run export:postman`. En Postman, selecciona **Import** y abre `docs/postman/Inventario-Almacen.postman_collection.json` junto con `docs/postman/Inventario-Local.postman_environment.json`; activa el entorno `Inventario-Local`. La colección v2.1 incluye 35 solicitudes y 25 variables de entorno (URL base, datos de prueba e IDs encadenados); genera documentos y códigos únicos al iniciar cada ejecución. Newman pasó las 65 aserciones, sin fallos. El resultado se guarda en `docs/evidencias/newman-resultado.txt`.
 
 Las pruebas unitarias de los servicios usan Mockito y no necesitan MySQL. La prueba de humo y Newman sí necesitan MySQL, Eureka y los servicios arriba. El build de frontend se ejecutó correctamente. En la última ejecución, `mvnw test` terminó en BUILD SUCCESS con 15 pruebas; el resumen queda en `docs/evidencias/mvn-test.txt`.
 
@@ -173,4 +174,4 @@ No se implementa autenticación. La lectura y escritura simultánea no usa bloqu
 
 MySQL temporal 8.4.9 está activo en `127.0.0.1:3306`, con datos en `%TEMP%\codex-mysql-inventory-20261104`; el usuario de aplicación y contraseña residen únicamente en el `.env` local ignorado por Git. Para iniciar MySQL después de cerrar esta sesión, ejecuta `mysqld.exe` con ese directorio de datos, `--bind-address=127.0.0.1` y `--port=3306`. La instancia es temporal y no está registrada como servicio de Windows.
 
-La ejecución validada incluye build de frontend, 15 pruebas unitarias, smoke test completo, Newman (20 aserciones, 0 fallos), Config Server, los cuatro clientes UP en Eureka, y arranque real de `producto-service` en perfiles dev, test y prod. Mermaid CLI 12.2.0 renderiza el diagrama PNG. Antes de presentar, el estudiante debe completar la sección, realizar sus capturas de Postman y revisar el borrador de conclusiones y sustentación.
+La ejecución validada incluye build de frontend, 15 pruebas unitarias, smoke test completo, Newman (35 solicitudes, 65 aserciones y 0 fallos), Config Server, los cuatro clientes UP en Eureka, y arranque real de `producto-service` en perfiles dev, test y prod. Mermaid CLI 12.2.0 renderiza el diagrama PNG. Antes de presentar, el estudiante debe completar la sección, realizar sus capturas de Postman y revisar el borrador de conclusiones y sustentación.

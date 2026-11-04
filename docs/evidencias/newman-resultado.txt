@@ -1,84 +1,199 @@
-(node:18324) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(node:24804) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
 (Use `node --trace-deprecation ...` to show where the warning was created)
 newman
 
-Inventario-Almacen
+Inventario de almacén - Suite completa
 
-□ Proveedores
-└ Crear proveedor
-  POST http://localhost:8080/api/proveedores [201 Created, 450B, 49ms]
-  √  Creado con 201
-  √  Incluye id y documento
+□ 01 Proveedores (CRUD y validación)
+└ 01 Crear proveedor
+  POST http://localhost:8080/api/proveedores [201 Created, 490B, 77ms]
+  √  Proveedor creado (201)
+  √  Incluye ID, documento y activo
 
-└ Obtener proveedor
-  GET http://localhost:8080/api/proveedores/17 [200 OK, 399B, 15ms]
-  √  Proveedor encontrado
-  √  Proveedor activo
+└ 02 Consultar proveedor
+  GET http://localhost:8080/api/proveedores/25 [200 OK, 439B, 22ms]
+  √  Proveedor encontrado (200)
+  √  ID coincide con la variable de entorno
 
-└ Documento duplicado (409)
-  POST http://localhost:8080/api/proveedores [409 Conflict, 377B, 15ms]
-  √  Conflicto 409
+└ 03 Actualizar proveedor
+  PUT http://localhost:8080/api/proveedores/25 [200 OK, 442B, 28ms]
+  √  Proveedor actualizado (200)
+  √  Devuelve la razón social actualizada
 
-□ Productos
-└ Crear producto
-  POST http://localhost:8080/api/productos [201 Created, 476B, 31ms]
-  √  Producto creado con 201
-  √  Incluye SKU y proveedor
+└ 04 Documento duplicado
+  POST http://localhost:8080/api/proveedores [409 Conflict, 377B, 12ms]
+  √  Documento duplicado (409)
+  √  Respuesta JSON con mensaje
 
-└ Producto inexistente (404)
-  GET http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 14ms]
-  √  No encontrado 404
-  √  Error JSON
+└ 05 Email inválido
+  POST http://localhost:8080/api/proveedores [400 Bad Request, 478B, 10ms]
+  √  Email inválido rechazado (400)
+  √  Error de validación reportado
 
-□ Movimientos
-└ Registrar entrada 100
-  POST http://localhost:8080/api/movimientos [201 Created, 375B, 32ms]
-  √  Entrada 201
-  √  Cantidad registrada
+└ 06 Proveedor inexistente
+  GET http://localhost:8080/api/proveedores/99999999 [404 Not Found, 379B, 14ms]
+  √  Proveedor inexistente (404)
+  √  Respuesta JSON con mensaje
 
-└ Registrar salida 30
-  POST http://localhost:8080/api/movimientos [201 Created, 372B, 35ms]
-  √  Salida 201
+└ 07 Actualizar proveedor inexistente
+  PUT http://localhost:8080/api/proveedores/99999999 [404 Not Found, 379B, 16ms]
+  √  Actualización inexistente (404)
+  √  Respuesta JSON con mensaje
 
-└ Stock esperado 70
-  GET http://localhost:8080/api/movimientos/producto/13/stock [200 OK, 341B, 32ms]
-  √  Consulta 200
-  √  Stock 70
+└ 08 Eliminar proveedor inexistente
+  DELETE http://localhost:8080/api/proveedores/99999999 [404 Not Found, 379B, 12ms]
+  √  Eliminación inexistente (404)
+  √  Respuesta JSON con mensaje
 
-└ Cantidad cero (400)
-  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 11ms]
-  √  Validación 400
-  √  Campo cantidad reportado
+└ 09 Crear proveedor inactivo
+  POST http://localhost:8080/api/proveedores [201 Created, 462B, 22ms]
+  √  Proveedor inactivo creado para prueba (201)
 
-└ Cantidad negativa (400)
-  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 12ms]
-  √  Validación 400
+└ 10 Desactivar proveedor de prueba
+  DELETE http://localhost:8080/api/proveedores/26 [204 No Content, 153B, 22ms]
+  √  Baja lógica del proveedor (204)
 
-└ Salida mayor al stock (422)
-  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 394B, 28ms]
-  √  Stock insuficiente 422
+□ 02 Productos (CRUD y referencias)
+└ 11 Crear producto
+  POST http://localhost:8080/api/productos [201 Created, 531B, 33ms]
+  √  Producto creado (201)
+  √  Código y proveedor coinciden con el entorno
 
-└ Historial (2 movimientos)
-  GET http://localhost:8080/api/movimientos/producto/13 [200 OK, 450B, 25ms]
-  √  Historial 200
-  √  Dos movimientos
+└ 12 Consultar producto
+  GET http://localhost:8080/api/productos/17 [200 OK, 482B, 10ms]
+  √  Producto encontrado (200)
+  √  Código coincide con la variable
 
-┌─────────────────────────┬───────────────────┬──────────────────┐
-│                         │          executed │           failed │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│              iterations │                 1 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│                requests │                12 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│            test-scripts │                12 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│      prerequest-scripts │                12 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│              assertions │                20 │                0 │
-├─────────────────────────┴───────────────────┴──────────────────┤
-│ total run duration: 1332ms                                     │
-├────────────────────────────────────────────────────────────────┤
-│ total data received: 2.25kB (approx)                           │
-├────────────────────────────────────────────────────────────────┤
-│ average response time: 24ms [min: 11ms, max: 49ms, s.d.: 11ms] │
-└────────────────────────────────────────────────────────────────┘
+└ 13 Actualizar producto
+  PUT http://localhost:8080/api/productos/17 [200 OK, 492B, 25ms]
+  √  Producto actualizado (200)
+  √  Nombre actualizado
+
+└ 14 Código de producto duplicado
+  POST http://localhost:8080/api/productos [409 Conflict, 372B, 19ms]
+  √  Código duplicado (409)
+  √  Respuesta JSON con mensaje
+
+└ 15 Precio negativo
+  POST http://localhost:8080/api/productos [400 Bad Request, 451B, 8ms]
+  √  Precio negativo rechazado (400)
+  √  Error de validación reportado
+
+└ 16 Crear producto con proveedor inexistente
+  POST http://localhost:8080/api/productos [404 Not Found, 368B, 20ms]
+  √  Referencia de proveedor inexistente (404)
+  √  Respuesta JSON con mensaje
+
+└ 17 Producto inexistente
+  GET http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 10ms]
+  √  Producto inexistente (404)
+  √  Respuesta JSON con mensaje
+
+└ 18 Actualizar producto inexistente
+  PUT http://localhost:8080/api/productos/99999999 [404 Not Found, 376B, 11ms]
+  √  Actualización inexistente (404)
+  √  Respuesta JSON con mensaje
+
+└ 19 Eliminar producto inexistente
+  DELETE http://localhost:8080/api/productos/99999999 [404 Not Found, 375B, 8ms]
+  √  Eliminación inexistente (404)
+  √  Respuesta JSON con mensaje
+
+└ 20 Actualizar con proveedor inactivo
+  PUT http://localhost:8080/api/productos/17 [422 Unprocessable Entity, 389B, 23ms]
+  √  Proveedor inactivo rechazado (422)
+  √  Respuesta JSON con mensaje
+
+□ 03 Movimientos y stock
+└ 21 Registrar entrada
+  POST http://localhost:8080/api/movimientos [201 Created, 378B, 29ms]
+  √  Entrada registrada (201)
+  √  Cantidad de entrada correcta
+
+└ 22 Registrar salida
+  POST http://localhost:8080/api/movimientos [201 Created, 375B, 27ms]
+  √  Salida registrada (201)
+  √  Cantidad de salida correcta
+
+└ 23 Consultar stock esperado
+  GET http://localhost:8080/api/movimientos/producto/17/stock [200 OK, 362B, 16ms]
+  √  Consulta de stock (200)
+  √  El stock coincide con el esperado
+
+└ 24 Consultar historial
+  GET http://localhost:8080/api/movimientos/producto/17 [200 OK, 456B, 16ms]
+  √  Historial consultado (200)
+  √  El historial contiene entrada y salida
+
+└ 25 Filtrar movimientos del producto
+  GET http://localhost:8080/api/movimientos?productoId=17 [200 OK, 456B, 13ms]
+  √  Filtro por producto (200)
+  √  El filtro devuelve solo los dos movimientos
+
+└ 26 Obtener movimiento creado
+  GET http://localhost:8080/api/movimientos/28 [200 OK, 327B, 9ms]
+  √  Movimiento encontrado (200)
+  √  El movimiento corresponde al producto
+
+└ 27 Cantidad cero
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 7ms]
+  √  Cantidad cero rechazada (400)
+  √  El campo cantidad aparece en los errores
+
+└ 28 Cantidad negativa
+  POST http://localhost:8080/api/movimientos [400 Bad Request, 434B, 10ms]
+  √  Cantidad negativa rechazada (400)
+
+└ 29 Salida superior al stock
+  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 395B, 28ms]
+  √  Stock insuficiente (422)
+  √  Respuesta JSON con mensaje
+
+└ 30 Movimiento con producto inexistente
+  POST http://localhost:8080/api/movimientos [404 Not Found, 369B, 21ms]
+  √  Producto inexistente (404)
+  √  Respuesta JSON con mensaje
+
+└ 31 Movimiento inexistente
+  GET http://localhost:8080/api/movimientos/99999999 [404 Not Found, 380B, 20ms]
+  √  Movimiento inexistente (404)
+  √  Respuesta JSON con mensaje
+
+□ 04 Bajas lógicas
+└ 32 Desactivar producto de prueba
+  DELETE http://localhost:8080/api/productos/17 [204 No Content, 153B, 17ms]
+  √  Baja lógica de producto (204)
+
+└ 33 Rechazar movimiento en producto inactivo
+  POST http://localhost:8080/api/movimientos [422 Unprocessable Entity, 386B, 16ms]
+  √  Producto inactivo rechazado (422)
+  √  Respuesta JSON con mensaje
+
+└ 34 Desactivar proveedor principal
+  DELETE http://localhost:8080/api/proveedores/25 [204 No Content, 153B, 16ms]
+  √  Baja lógica del proveedor principal (204)
+
+└ 35 Confirmar proveedor inactivo
+  GET http://localhost:8080/api/proveedores/25 [200 OK, 443B, 14ms]
+  √  Consulta de proveedor inactivo (200)
+  √  La baja lógica se conserva
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               35 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               35 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               65 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 3.5s                                      │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 6.39kB (approx)                          │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 18ms [min: 7ms, max: 77ms, s.d.: 12ms] │
+└───────────────────────────────────────────────────────────────┘

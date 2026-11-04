@@ -1,25 +1,1367 @@
 {
-  "info": {"_postman_id":"a9ff4bd3-1819-478d-8572-a128a3f09308","name":"Inventario-Almacen","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
-  "variable": [{"key":"documento","value":""},{"key":"codigo","value":""},{"key":"proveedorId","value":""},{"key":"productoId","value":""}],
-  "event": [{"listen":"prerequest","script":{"type":"text/javascript","exec":["if (!pm.collectionVariables.get('documento')) pm.collectionVariables.set('documento', 'PM-' + Date.now().toString().slice(-8));","if (!pm.collectionVariables.get('codigo')) pm.collectionVariables.set('codigo', 'SKU-' + Date.now().toString().slice(-8));"]}}],
+  "info": {
+    "_postman_id": "95338d74-59b3-444a-b154-5e41fdac1acf",
+    "name": "Inventario de almacén - Suite completa",
+    "description": "Pruebas CRUD, validaciones y movimientos de inventario. Usa variables del entorno Inventario-Local. Las claves se crean dinámicamente al empezar cada ejecución.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
   "item": [
-    {"name":"Proveedores","item":[
-      {"name":"Crear proveedor","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"documento\": \"{{documento}}\",\n  \"razonSocial\": \"Proveedor Postman\",\n  \"email\": \"postman@example.test\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/proveedores","host":["{{baseUrl}}"],"path":["api","proveedores"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Creado con 201', () => pm.response.to.have.status(201));","const body = pm.response.json();","pm.test('Incluye id y documento', () => { pm.expect(body.id).to.exist; pm.expect(body.documento).to.eql(pm.collectionVariables.get('documento')); });","pm.collectionVariables.set('proveedorId', body.id);"]}}]},
-      {"name":"Obtener proveedor","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/proveedores/{{proveedorId}}","host":["{{baseUrl}}"],"path":["api","proveedores","{{proveedorId}}"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Proveedor encontrado', () => pm.response.to.have.status(200));","pm.test('Proveedor activo', () => pm.expect(pm.response.json().activo).to.eql(true));"]}}]},
-      {"name":"Documento duplicado (409)","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"documento\":\"{{documento}}\",\"razonSocial\":\"Duplicado\"}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/proveedores","host":["{{baseUrl}}"],"path":["api","proveedores"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Conflicto 409', () => pm.response.to.have.status(409));"]}}]}
-    ]},
-    {"name":"Productos","item":[
-      {"name":"Crear producto","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"codigo\": \"{{codigo}}\",\n  \"nombre\": \"Producto Postman\",\n  \"unidadMedida\": \"UNIDAD\",\n  \"precioUnitario\": 12.50,\n  \"stockMinimo\": 5,\n  \"proveedorId\": {{proveedorId}}\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/productos","host":["{{baseUrl}}"],"path":["api","productos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Producto creado con 201', () => pm.response.to.have.status(201));","const body = pm.response.json();","pm.test('Incluye SKU y proveedor', () => { pm.expect(body.codigo).to.eql(pm.collectionVariables.get('codigo')); pm.expect(body.proveedorId).to.eql(Number(pm.collectionVariables.get('proveedorId'))); });","pm.collectionVariables.set('productoId', body.id);"]}}]},
-      {"name":"Producto inexistente (404)","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/productos/99999999","host":["{{baseUrl}}"],"path":["api","productos","99999999"]}},"event":[{"listen":"test","script":{"exec":["pm.test('No encontrado 404', () => pm.response.to.have.status(404));","pm.test('Error JSON', () => pm.expect(pm.response.json().message).to.exist);"]}}]}
-    ]},
-    {"name":"Movimientos","item":[
-      {"name":"Registrar entrada 100","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":100,\"observacion\":\"Entrada de aceptación\"}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/movimientos","host":["{{baseUrl}}"],"path":["api","movimientos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Entrada 201', () => pm.response.to.have.status(201));","pm.test('Cantidad registrada', () => pm.expect(pm.response.json().cantidad).to.eql(100));"]}}]},
-      {"name":"Registrar salida 30","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"productoId\":{{productoId}},\"tipo\":\"SALIDA\",\"cantidad\":30,\"observacion\":\"Salida de aceptación\"}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/movimientos","host":["{{baseUrl}}"],"path":["api","movimientos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Salida 201', () => pm.response.to.have.status(201));"]}}]},
-      {"name":"Stock esperado 70","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/movimientos/producto/{{productoId}}/stock","host":["{{baseUrl}}"],"path":["api","movimientos","producto","{{productoId}}","stock"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Consulta 200', () => pm.response.to.have.status(200));","pm.test('Stock 70', () => pm.expect(pm.response.json().stockActual).to.eql(70));"]}}]},
-      {"name":"Cantidad cero (400)","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":0}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/movimientos","host":["{{baseUrl}}"],"path":["api","movimientos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Validación 400', () => pm.response.to.have.status(400));","pm.test('Campo cantidad reportado', () => pm.expect(pm.response.json().errors.some(x => x.field === 'cantidad')).to.eql(true));"]}}]},
-      {"name":"Cantidad negativa (400)","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":-5}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/movimientos","host":["{{baseUrl}}"],"path":["api","movimientos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Validación 400', () => pm.response.to.have.status(400));"]}}]},
-      {"name":"Salida mayor al stock (422)","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"productoId\":{{productoId}},\"tipo\":\"SALIDA\",\"cantidad\":1000}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/api/movimientos","host":["{{baseUrl}}"],"path":["api","movimientos"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Stock insuficiente 422', () => pm.response.to.have.status(422));"]}}]},
-      {"name":"Historial (2 movimientos)","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/movimientos/producto/{{productoId}}","host":["{{baseUrl}}"],"path":["api","movimientos","producto","{{productoId}}"]}},"event":[{"listen":"test","script":{"exec":["pm.test('Historial 200', () => pm.response.to.have.status(200));","pm.test('Dos movimientos', () => pm.expect(pm.response.json().length).to.eql(2));"]}}]}
-    ]}
+    {
+      "name": "01 Proveedores (CRUD y validación)",
+      "item": [
+        {
+          "name": "01 Crear proveedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"{{documentoProveedor}}\",\n  \"razonSocial\": \"Proveedor Postman {{runStamp}}\",\n  \"contacto\": \"Equipo Postman\",\n  \"telefono\": \"555-0101\",\n  \"email\": \"postman@example.test\",\n  \"direccion\": \"Pruebas locales\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var stamp = Date.now().toString().slice(-8);",
+                  "pm.environment.set('runStamp', stamp);",
+                  "pm.environment.set('documentoProveedor', 'PM-' + stamp);",
+                  "pm.environment.set('documentoProveedorInactivo', 'INA-' + stamp);",
+                  "pm.environment.set('documentoProveedorInexistente', 'MISS-' + stamp);",
+                  "pm.environment.set('codigoProducto', 'SKU-' + stamp);",
+                  "pm.environment.set('codigoProductoInexistente', 'MISS-SKU-' + stamp);",
+                  "['proveedorId', 'proveedorInactivoId', 'productoId', 'movimientoEntradaId', 'movimientoSalidaId'].forEach(key => pm.environment.set(key, ''));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor creado (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('Incluye ID, documento y activo', () => { pm.expect(pm.response.json().id).to.be.a('number'); pm.expect(pm.response.json().documento).to.eql(pm.environment.get('documentoProveedor')); pm.expect(pm.response.json().activo).to.eql(true); });",
+                  "pm.environment.set('proveedorId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Consultar proveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{proveedorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor encontrado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('ID coincide con la variable de entorno', () => pm.expect(String(pm.response.json().id)).to.eql(pm.environment.get('proveedorId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Actualizar proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"documento\":\"{{documentoProveedor}}\",\"razonSocial\":\"Proveedor Postman actualizado\",\"contacto\":\"Equipo Postman\",\"telefono\":\"555-0101\",\"email\":\"postman@example.test\",\"direccion\":\"Pruebas locales\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{proveedorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor actualizado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve la razón social actualizada', () => pm.expect(pm.response.json().razonSocial).to.eql('Proveedor Postman actualizado'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Documento duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"documento\":\"{{documentoProveedor}}\",\"razonSocial\":\"Proveedor duplicado\",\"contacto\":\"Equipo Postman\",\"telefono\":\"555-0101\",\"email\":\"postman@example.test\",\"direccion\":\"Pruebas locales\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Documento duplicado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Email inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"documento\":\"MAIL-{{runStamp}}\",\"razonSocial\":\"Email inválido\",\"email\":\"{{emailInvalido}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Email inválido rechazado (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('Error de validación reportado', () => pm.expect(pm.response.json().errors.length).to.be.greaterThan(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Proveedor inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Actualizar proveedor inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"documento\":\"{{documentoProveedorInexistente}}\",\"razonSocial\":\"Proveedor ausente\",\"contacto\":\"Equipo Postman\",\"telefono\":\"555-0101\",\"email\":\"postman@example.test\",\"direccion\":\"Pruebas locales\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Actualización inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Eliminar proveedor inexistente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Eliminación inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Crear proveedor inactivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"documento\":\"{{documentoProveedorInactivo}}\",\"razonSocial\":\"Proveedor inactivo {{runStamp}}\",\"email\":\"inactivo@example.test\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor inactivo creado para prueba (201)', () => pm.response.to.have.status(201));",
+                  "pm.environment.set('proveedorInactivoId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Desactivar proveedor de prueba",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{proveedorInactivoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{proveedorInactivoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Baja lógica del proveedor (204)', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Productos (CRUD y referencias)",
+      "item": [
+        {
+          "name": "11 Crear producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProducto}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto creado (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('Código y proveedor coinciden con el entorno', () => { pm.expect(pm.response.json().codigo).to.eql(pm.environment.get('codigoProducto')); pm.expect(String(pm.response.json().proveedorId)).to.eql(pm.environment.get('proveedorId')); });",
+                  "pm.environment.set('productoId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Consultar producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{productoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto encontrado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('Código coincide con la variable', () => pm.expect(pm.response.json().codigo).to.eql(pm.environment.get('codigoProducto')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Actualizar producto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProducto}}\",\n  \"nombre\": \"Producto Postman actualizado {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{productoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto actualizado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('Nombre actualizado', () => pm.expect(pm.response.json().nombre).to.include('Producto Postman actualizado'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Código de producto duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProducto}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código duplicado (409)', () => pm.response.to.have.status(409));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 Precio negativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProductoInexistente}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": -1.00,\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Precio negativo rechazado (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('Error de validación reportado', () => pm.expect(pm.response.json().errors.length).to.be.greaterThan(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 Crear producto con proveedor inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProductoInexistente}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{idInexistente}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Referencia de proveedor inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 Producto inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 Actualizar producto inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProductoInexistente}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Actualización inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 Eliminar producto inexistente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Eliminación inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20 Actualizar con proveedor inactivo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoProducto}}\",\n  \"nombre\": \"Producto de prueba {{runStamp}}\",\n  \"descripcion\": \"Registro creado por la colección Postman\",\n  \"categoria\": \"Pruebas\",\n  \"unidadMedida\": \"{{unidadMedida}}\",\n  \"precioUnitario\": {{precioUnitario}},\n  \"stockMinimo\": {{stockMinimo}},\n  \"proveedorId\": {{proveedorInactivoId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{productoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor inactivo rechazado (422)', () => pm.response.to.have.status(422));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Movimientos y stock",
+      "item": [
+        {
+          "name": "21 Registrar entrada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":{{cantidadEntrada}},\"observacion\":\"{{observacionEntrada}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Entrada registrada (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('Cantidad de entrada correcta', () => pm.expect(pm.response.json().cantidad).to.eql(Number(pm.environment.get('cantidadEntrada')))); pm.environment.set('movimientoEntradaId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "22 Registrar salida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"SALIDA\",\"cantidad\":{{cantidadSalida}},\"observacion\":\"{{observacionSalida}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Salida registrada (201)', () => pm.response.to.have.status(201));",
+                  "pm.test('Cantidad de salida correcta', () => pm.expect(pm.response.json().cantidad).to.eql(Number(pm.environment.get('cantidadSalida')))); pm.environment.set('movimientoSalidaId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "23 Consultar stock esperado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos/producto/{{productoId}}/stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos",
+                "producto",
+                "{{productoId}}",
+                "stock"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de stock (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('El stock coincide con el esperado', () => pm.expect(pm.response.json().stockActual).to.eql(Number(pm.environment.get('stockEsperado'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "24 Consultar historial",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos/producto/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos",
+                "producto",
+                "{{productoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Historial consultado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('El historial contiene entrada y salida', () => pm.expect(pm.response.json().length).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "25 Filtrar movimientos del producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos?productoId={{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ],
+              "query": [
+                {
+                  "key": "productoId",
+                  "value": "{{productoId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Filtro por producto (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('El filtro devuelve solo los dos movimientos', () => pm.expect(pm.response.json().length).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "26 Obtener movimiento creado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos/{{movimientoEntradaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos",
+                "{{movimientoEntradaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Movimiento encontrado (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('El movimiento corresponde al producto', () => pm.expect(String(pm.response.json().productoId)).to.eql(pm.environment.get('productoId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "27 Cantidad cero",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":{{cantidadCero}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cantidad cero rechazada (400)', () => pm.response.to.have.status(400));",
+                  "pm.test('El campo cantidad aparece en los errores', () => pm.expect(pm.response.json().errors.some(x => x.field === 'cantidad')).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "28 Cantidad negativa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":{{cantidadNegativa}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cantidad negativa rechazada (400)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "29 Salida superior al stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"SALIDA\",\"cantidad\":{{cantidadInsuficiente}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock insuficiente (422)', () => pm.response.to.have.status(422));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "30 Movimiento con producto inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{idInexistente}},\"tipo\":\"ENTRADA\",\"cantidad\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "31 Movimiento inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos/{{idInexistente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos",
+                "{{idInexistente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Movimiento inexistente (404)', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Bajas lógicas",
+      "item": [
+        {
+          "name": "32 Desactivar producto de prueba",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{productoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Baja lógica de producto (204)', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "33 Rechazar movimiento en producto inactivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productoId\":{{productoId}},\"tipo\":\"ENTRADA\",\"cantidad\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movimientos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto inactivo rechazado (422)', () => pm.response.to.have.status(422));",
+                  "pm.test('Respuesta JSON con mensaje', () => pm.expect(pm.response.json().message).to.be.a('string').and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "34 Desactivar proveedor principal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{proveedorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Baja lógica del proveedor principal (204)', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "35 Confirmar proveedor inactivo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores",
+                "{{proveedorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de proveedor inactivo (200)', () => pm.response.to.have.status(200));",
+                  "pm.test('La baja lógica se conserva', () => pm.expect(pm.response.json().activo).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
