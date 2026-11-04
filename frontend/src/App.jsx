@@ -1,27 +1,905 @@
-import { useEffect, useState } from 'react'
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
-import api from './api/client'
-import './App.css'
+import { useEffect, useState } from "react";
+import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import api from "./api/client";
+import "./App.css";
 
-const blankSupplier={documento:'',razonSocial:'',contacto:'',telefono:'',email:'',direccion:''}
-const blankProduct={codigo:'',nombre:'',descripcion:'',categoria:'',unidadMedida:'UNIDAD',precioUnitario:'',stockMinimo:0,proveedorId:''}
-const today=()=>{const date=new Date();date.setMinutes(date.getMinutes()-date.getTimezoneOffset());return date.toISOString().slice(0,16)}
-const errText=e=>e.response?.data?.message||'No se pudo completar. Verifica que los servicios estén disponibles.'
-const errFields=e=>Object.fromEntries((e.response?.data?.errors||[]).map(x=>[x.field,x.message]))
+const blankSupplier = {
+  documento: "",
+  razonSocial: "",
+  contacto: "",
+  telefono: "",
+  email: "",
+  direccion: "",
+};
+const blankProduct = {
+  codigo: "",
+  nombre: "",
+  descripcion: "",
+  categoria: "",
+  unidadMedida: "UNIDAD",
+  precioUnitario: "",
+  stockMinimo: 0,
+  proveedorId: "",
+};
+const today = () => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 16);
+};
+const errText = (e) =>
+  e.response?.data?.message ||
+  "No se pudo completar. Verifica que los servicios estén disponibles.";
+const errFields = (e) =>
+  Object.fromEntries(
+    (e.response?.data?.errors || []).map((x) => [x.field, x.message]),
+  );
 
-function Layout(){return <div className="layout"><aside><a className="brand" href="/">◧ <b>Almacén</b><small>CONTROL</small></a><label className="nav-label">OPERACIÓN</label><nav><NavLink to="/" end>◫　Panel</NavLink><NavLink to="/proveedores">♧　Proveedores</NavLink><NavLink to="/productos">▦　Productos</NavLink><NavLink to="/movimientos">↕　Movimientos</NavLink></nav><div className="side-status"><i/> Sistema local <span>· API 8080</span></div></aside><main><header><div><small>GESTIÓN DE INVENTARIO</small><b>Laboratorio 07</b></div><span className="avatar">FL</span></header><div className="content"><Routes><Route path="/" element={<Dashboard/>}/><Route path="/proveedores" element={<Suppliers/>}/><Route path="/productos" element={<Products/>}/><Route path="/movimientos" element={<Movements/>}/></Routes></div></main></div>}
-function Head({eyebrow,title,children}){return <div className="page-head"><div><small>{eyebrow}</small><h1>{title}</h1></div>{children}</div>}
-function Notice({value,success=false}){return value&&<p className={`notice ${success?'success':''}`} role="status">{value}</p>}
-function Table({headers,children,empty}){return <div className="table-scroll"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{children}</tbody></table>{empty&&<p className="empty">{empty}</p>}</div>}
-function Loading({error,retry}){return <div className="empty">{error?<><strong>{error}</strong><br/><button className="button secondary" onClick={retry}>Intentar de nuevo</button></>:'Cargando datos…'}</div>}
-function Metric({title,value,note,icon,color}){return <article className="metric"><div><span>{title}</span><b className={`icon ${color}`}>{icon}</b></div><strong>{value}</strong><small>{note}</small></article>}
+function Layout() {
+  return (
+    <div className="layout">
+      <aside>
+        <a className="brand" href="/">
+          ◧ <b>Almacén</b>
+          <small>CONTROL</small>
+        </a>
+        <label className="nav-label">OPERACIÓN</label>
+        <nav>
+          <NavLink to="/" end>
+            ◫　Panel
+          </NavLink>
+          <NavLink to="/proveedores">♧　Proveedores</NavLink>
+          <NavLink to="/productos">▦　Productos</NavLink>
+          <NavLink to="/movimientos">↕　Movimientos</NavLink>
+        </nav>
+        <div className="side-status">
+          <i /> Sistema local <span>· API 8080</span>
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div>
+            <small>GESTIÓN DE INVENTARIO</small>
+            <b>Laboratorio 07</b>
+          </div>
+          <span className="avatar">FL</span>
+        </header>
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/proveedores" element={<Suppliers />} />
+            <Route path="/productos" element={<Products />} />
+            <Route path="/movimientos" element={<Movements />} />
+          </Routes>
+        </div>
+      </main>
+    </div>
+  );
+}
+function Head({ eyebrow, title, children }) {
+  return (
+    <div className="page-head">
+      <div>
+        <small>{eyebrow}</small>
+        <h1>{title}</h1>
+      </div>
+      {children}
+    </div>
+  );
+}
+function Notice({ value, success = false }) {
+  return (
+    value && (
+      <p className={`notice ${success ? "success" : ""}`} role="status">
+        {value}
+      </p>
+    )
+  );
+}
+function Table({ headers, children, empty }) {
+  return (
+    <div className="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            {headers.map((h) => (
+              <th key={h}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+      {empty && <p className="empty">{empty}</p>}
+    </div>
+  );
+}
+function Loading({ error, retry }) {
+  return (
+    <div className="empty">
+      {error ? (
+        <>
+          <strong>{error}</strong>
+          <br />
+          <button className="button secondary" onClick={retry}>
+            Intentar de nuevo
+          </button>
+        </>
+      ) : (
+        "Cargando datos…"
+      )}
+    </div>
+  );
+}
+function Metric({ title, value, note, icon, color }) {
+  return (
+    <article className="metric">
+      <div>
+        <span>{title}</span>
+        <b className={`icon ${color}`}>{icon}</b>
+      </div>
+      <strong>{value}</strong>
+      <small>{note}</small>
+    </article>
+  );
+}
 
-function Dashboard(){const [d,setD]=useState(null),[error,setError]=useState('');const load=()=>Promise.all([api.get('/productos'),api.get('/proveedores'),api.get('/movimientos'),api.get('/movimientos/stock')]).then(r=>{setD({p:r[0].data,v:r[1].data,m:r[2].data,s:r[3].data});setError('')}).catch(e=>setError(errText(e)));useEffect(load,[]);if(!d)return <><Head eyebrow="RESUMEN" title="Panel de almacén"/><Loading error={error} retry={load}/></>;const names=Object.fromEntries(d.p.map(x=>[x.id,x.nombre]));const recent=[...d.m].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,5);return <><Head eyebrow="RESUMEN" title="Panel de almacén"><span className="pill">{new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})}</span></Head><section className="metrics"><Metric title="Productos activos" value={d.p.length} note="En catálogo" icon="▦" color="blue"/><Metric title="Proveedores activos" value={d.v.length} note="Socios registrados" icon="♧" color="violet"/><Metric title="Movimientos" value={d.m.length} note="Registros históricos" icon="↕" color="amber"/><Metric title="Bajo mínimo" value={d.s.filter(x=>x.bajoMinimo).length} note="Requieren reposición" icon="!" color="red"/></section><div className="two-panels"><section className="panel"><div className="panel-head"><div><small>CONTROL DE EXISTENCIAS</small><h2>Stock por producto</h2></div><NavLink to="/productos">Catálogo →</NavLink></div><Table headers={['PRODUCTO','STOCK','MÍNIMO','ESTADO']} empty={!d.s.length?'Aún no hay movimientos de stock.':''}>{d.s.map(s=><tr key={s.productoId}><td><b>{s.nombreProducto||names[s.productoId]||`Producto ${s.productoId}`}</b><small className="sub">ID {s.productoId}</small></td><td>{s.stockActual}</td><td>{s.stockMinimo}</td><td><span className={`badge ${s.bajoMinimo?'bad':'good'}`}>{s.bajoMinimo?'Bajo mínimo':'Disponible'}</span></td></tr>)}</Table></section><section className="panel"><div className="panel-head"><div><small>ACTIVIDAD</small><h2>Movimientos recientes</h2></div><NavLink to="/movimientos">Ver todos →</NavLink></div>{recent.map(m=><div className="activity" key={m.id}><span className={`move ${m.tipo.toLowerCase()}`}>{m.tipo==='ENTRADA'?'↓':'↑'}</span><div><b>{names[m.productoId]||`Producto ${m.productoId}`}</b><small>{new Date(m.fecha).toLocaleString('es-CO')}</small></div><strong className={m.tipo==='ENTRADA'?'positive':'negative'}>{m.tipo==='ENTRADA'?'+':'−'}{m.cantidad}</strong></div>)}{!recent.length&&<p className="empty">Sin movimientos recientes.</p>}</section></div></>}
+function Dashboard() {
+  const [d, setD] = useState(null),
+    [error, setError] = useState("");
+  const load = () =>
+    Promise.all([
+      api.get("/productos"),
+      api.get("/proveedores"),
+      api.get("/movimientos"),
+      api.get("/movimientos/stock"),
+    ])
+      .then((r) => {
+        setD({ p: r[0].data, v: r[1].data, m: r[2].data, s: r[3].data });
+        setError("");
+      })
+      .catch((e) => setError(errText(e)));
+  useEffect(load, []);
+  if (!d)
+    return (
+      <>
+        <Head eyebrow="RESUMEN" title="Panel de almacén" />
+        <Loading error={error} retry={load} />
+      </>
+    );
+  const names = Object.fromEntries(d.p.map((x) => [x.id, x.nombre]));
+  const recent = [...d.m]
+    .sort((a, b) => b.fecha.localeCompare(a.fecha))
+    .slice(0, 5);
+  return (
+    <>
+      <Head eyebrow="RESUMEN" title="Panel de almacén">
+        <span className="pill">
+          {new Date().toLocaleDateString("es-CO", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
+      </Head>
+      <section className="metrics">
+        <Metric
+          title="Productos activos"
+          value={d.p.length}
+          note="En catálogo"
+          icon="▦"
+          color="blue"
+        />
+        <Metric
+          title="Proveedores activos"
+          value={d.v.length}
+          note="Socios registrados"
+          icon="♧"
+          color="violet"
+        />
+        <Metric
+          title="Movimientos"
+          value={d.m.length}
+          note="Registros históricos"
+          icon="↕"
+          color="amber"
+        />
+        <Metric
+          title="Bajo mínimo"
+          value={d.s.filter((x) => x.bajoMinimo).length}
+          note="Requieren reposición"
+          icon="!"
+          color="red"
+        />
+      </section>
+      <div className="two-panels">
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <small>CONTROL DE EXISTENCIAS</small>
+              <h2>Stock por producto</h2>
+            </div>
+            <NavLink to="/productos">Catálogo →</NavLink>
+          </div>
+          <Table
+            headers={["PRODUCTO", "STOCK", "MÍNIMO", "ESTADO"]}
+            empty={!d.s.length ? "Aún no hay movimientos de stock." : ""}
+          >
+            {d.s.map((s) => (
+              <tr key={s.productoId}>
+                <td>
+                  <b>
+                    {s.nombreProducto ||
+                      names[s.productoId] ||
+                      `Producto ${s.productoId}`}
+                  </b>
+                  <small className="sub">ID {s.productoId}</small>
+                </td>
+                <td>{s.stockActual}</td>
+                <td>{s.stockMinimo}</td>
+                <td>
+                  <span className={`badge ${s.bajoMinimo ? "bad" : "good"}`}>
+                    {s.bajoMinimo ? "Bajo mínimo" : "Disponible"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </Table>
+        </section>
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <small>ACTIVIDAD</small>
+              <h2>Movimientos recientes</h2>
+            </div>
+            <NavLink to="/movimientos">Ver todos →</NavLink>
+          </div>
+          {recent.map((m) => (
+            <div className="activity" key={m.id}>
+              <span className={`move ${m.tipo.toLowerCase()}`}>
+                {m.tipo === "ENTRADA" ? "↓" : "↑"}
+              </span>
+              <div>
+                <b>{names[m.productoId] || `Producto ${m.productoId}`}</b>
+                <small>{new Date(m.fecha).toLocaleString("es-CO")}</small>
+              </div>
+              <strong
+                className={m.tipo === "ENTRADA" ? "positive" : "negative"}
+              >
+                {m.tipo === "ENTRADA" ? "+" : "−"}
+                {m.cantidad}
+              </strong>
+            </div>
+          ))}
+          {!recent.length && (
+            <p className="empty">Sin movimientos recientes.</p>
+          )}
+        </section>
+      </div>
+    </>
+  );
+}
 
-function Suppliers(){const [items,setItems]=useState([]),[form,setForm]=useState(blankSupplier),[edit,setEdit]=useState(null),[search,setSearch]=useState(''),[error,setError]=useState(''),[ok,setOk]=useState(''),[invalid,setInvalid]=useState({}),[loading,setLoading]=useState(true);const load=()=>{setLoading(true);api.get('/proveedores').then(r=>{setItems(r.data);setError('')}).catch(e=>setError(errText(e))).finally(()=>setLoading(false))};useEffect(load,[]);const save=async e=>{e.preventDefault();setError('');setInvalid({});try{if(edit)await api.put(`/proveedores/${edit}`,form);else await api.post('/proveedores',form);setOk(edit?'Proveedor actualizado.':'Proveedor creado.');setForm(blankSupplier);setEdit(null);load()}catch(e){setError(errText(e));setInvalid(errFields(e))}};const deactivate=async id=>{if(!confirm('¿Desactivar este proveedor?'))return;try{await api.delete(`/proveedores/${id}`);setOk('Proveedor desactivado.');load()}catch(e){setError(errText(e))}};const visible=items.filter(p=>`${p.razonSocial} ${p.documento}`.toLowerCase().includes(search.toLowerCase()));return <><Head eyebrow="DATOS MAESTROS" title="Proveedores"><span className="pill">{items.length} activos</span></Head><Notice value={error}/><Notice value={ok} success/><section className="panel"><div className="panel-head"><div><small>{edit?'EDITAR REGISTRO':'NUEVO REGISTRO'}</small><h2>{edit?'Actualizar proveedor':'Agregar proveedor'}</h2></div></div><form className="form-grid" onSubmit={save}>{[['documento','Documento tributario'],['razonSocial','Razón social'],['contacto','Persona de contacto'],['telefono','Teléfono'],['email','Correo electrónico'],['direccion','Dirección']].map(([k,l])=><label key={k}>{l}{['documento','razonSocial'].includes(k)&&' *'}<input required={['documento','razonSocial'].includes(k)} type={k==='email'?'email':'text'} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}/>{invalid[k]&&<em>{invalid[k]}</em>}</label>)}<div className="form-actions"><button className="button primary">{edit?'Guardar cambios':'Crear proveedor'}</button>{edit&&<button type="button" className="button secondary" onClick={()=>{setEdit(null);setForm(blankSupplier)}}>Cancelar</button>}</div></form></section><section className="panel"><div className="panel-head"><div><small>DIRECTORIO</small><h2>Proveedores activos</h2></div><input className="search" placeholder="Buscar nombre o documento" value={search} onChange={e=>setSearch(e.target.value)}/></div>{loading?<Loading error={error} retry={load}/>:<Table headers={['PROVEEDOR','DOCUMENTO','CONTACTO','CORREO','']} empty={!visible.length?'No hay proveedores para mostrar.':''}>{visible.map(p=><tr key={p.id}><td><b>{p.razonSocial}</b></td><td>{p.documento}</td><td>{p.contacto||p.telefono||'—'}</td><td>{p.email||'—'}</td><td className="actions"><button onClick={()=>{setEdit(p.id);setForm(Object.fromEntries(Object.keys(blankSupplier).map(k=>[k,p[k]||''])));scrollTo({top:0,behavior:'smooth'})}}>Editar</button><button className="danger" onClick={()=>deactivate(p.id)}>Desactivar</button></td></tr>)}</Table>}</section></>}
+function Suppliers() {
+  const [items, setItems] = useState([]),
+    [form, setForm] = useState(blankSupplier),
+    [edit, setEdit] = useState(null),
+    [search, setSearch] = useState(""),
+    [error, setError] = useState(""),
+    [ok, setOk] = useState(""),
+    [invalid, setInvalid] = useState({}),
+    [loading, setLoading] = useState(true);
+  const load = () => {
+    setLoading(true);
+    api
+      .get("/proveedores")
+      .then((r) => {
+        setItems(r.data);
+        setError("");
+      })
+      .catch((e) => setError(errText(e)))
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+  const save = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInvalid({});
+    try {
+      if (edit) await api.put(`/proveedores/${edit}`, form);
+      else await api.post("/proveedores", form);
+      setOk(edit ? "Proveedor actualizado." : "Proveedor creado.");
+      setForm(blankSupplier);
+      setEdit(null);
+      load();
+    } catch (e) {
+      setError(errText(e));
+      setInvalid(errFields(e));
+    }
+  };
+  const deactivate = async (id) => {
+    if (!confirm("¿Desactivar este proveedor?")) return;
+    try {
+      await api.delete(`/proveedores/${id}`);
+      setOk("Proveedor desactivado.");
+      load();
+    } catch (e) {
+      setError(errText(e));
+    }
+  };
+  const visible = items.filter((p) =>
+    `${p.razonSocial} ${p.documento}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
+  );
+  return (
+    <>
+      <Head eyebrow="DATOS MAESTROS" title="Proveedores">
+        <span className="pill">{items.length} activos</span>
+      </Head>
+      <Notice value={error} />
+      <Notice value={ok} success />
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <small>{edit ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}</small>
+            <h2>{edit ? "Actualizar proveedor" : "Agregar proveedor"}</h2>
+          </div>
+        </div>
+        <form className="form-grid" onSubmit={save}>
+          {[
+            ["documento", "Documento tributario"],
+            ["razonSocial", "Razón social"],
+            ["contacto", "Persona de contacto"],
+            ["telefono", "Teléfono"],
+            ["email", "Correo electrónico"],
+            ["direccion", "Dirección"],
+          ].map(([k, l]) => (
+            <label key={k}>
+              {l}
+              {["documento", "razonSocial"].includes(k) && " *"}
+              <input
+                required={["documento", "razonSocial"].includes(k)}
+                type={k === "email" ? "email" : "text"}
+                value={form[k]}
+                onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+              />
+              {invalid[k] && <em>{invalid[k]}</em>}
+            </label>
+          ))}
+          <div className="form-actions">
+            <button className="button primary">
+              {edit ? "Guardar cambios" : "Crear proveedor"}
+            </button>
+            {edit && (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => {
+                  setEdit(null);
+                  setForm(blankSupplier);
+                }}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+      </section>
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <small>DIRECTORIO</small>
+            <h2>Proveedores activos</h2>
+          </div>
+          <input
+            className="search"
+            placeholder="Buscar nombre o documento"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {loading ? (
+          <Loading error={error} retry={load} />
+        ) : (
+          <Table
+            headers={["PROVEEDOR", "DOCUMENTO", "CONTACTO", "CORREO", ""]}
+            empty={!visible.length ? "No hay proveedores para mostrar." : ""}
+          >
+            {visible.map((p) => (
+              <tr key={p.id}>
+                <td>
+                  <b>{p.razonSocial}</b>
+                </td>
+                <td>{p.documento}</td>
+                <td>{p.contacto || p.telefono || "—"}</td>
+                <td>{p.email || "—"}</td>
+                <td className="actions">
+                  <button
+                    onClick={() => {
+                      setEdit(p.id);
+                      setForm(
+                        Object.fromEntries(
+                          Object.keys(blankSupplier).map((k) => [
+                            k,
+                            p[k] || "",
+                          ]),
+                        ),
+                      );
+                      scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button className="danger" onClick={() => deactivate(p.id)}>
+                    Desactivar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </section>
+    </>
+  );
+}
 
-function Products(){const [items,setItems]=useState([]),[suppliers,setSuppliers]=useState([]),[stock,setStock]=useState({}),[form,setForm]=useState(blankProduct),[edit,setEdit]=useState(null),[error,setError]=useState(''),[ok,setOk]=useState(''),[invalid,setInvalid]=useState({}),[loading,setLoading]=useState(true);const load=()=>{setLoading(true);Promise.all([api.get('/productos'),api.get('/proveedores'),api.get('/movimientos/stock')]).then(([p,v,s])=>{setItems(p.data);setSuppliers(v.data);setStock(Object.fromEntries(s.data.map(x=>[x.productoId,x.stockActual])));setError('')}).catch(e=>setError(errText(e))).finally(()=>setLoading(false))};useEffect(load,[]);const save=async e=>{e.preventDefault();setError('');setInvalid({});const data={...form,precioUnitario:Number(form.precioUnitario),stockMinimo:Number(form.stockMinimo),proveedorId:Number(form.proveedorId)};try{if(edit)await api.put(`/productos/${edit}`,data);else await api.post('/productos',data);setOk(edit?'Producto actualizado.':'Producto creado.');setEdit(null);setForm(blankProduct);load()}catch(e){setError(errText(e));setInvalid(errFields(e))}};const deactivate=async id=>{if(!confirm('¿Desactivar este producto?'))return;try{await api.delete(`/productos/${id}`);setOk('Producto desactivado.');load()}catch(e){setError(errText(e))}};return <><Head eyebrow="CATÁLOGO" title="Productos"><span className="pill">{items.length} activos</span></Head><Notice value={error}/><Notice value={ok} success/><section className="panel"><div className="panel-head"><div><small>{edit?'EDITAR REGISTRO':'NUEVO REGISTRO'}</small><h2>{edit?'Actualizar producto':'Agregar producto'}</h2></div></div><form className="form-grid" onSubmit={save}>{[['codigo','Código SKU'],['nombre','Nombre'],['categoria','Categoría'],['precioUnitario','Precio unitario'],['stockMinimo','Stock mínimo'],['descripcion','Descripción']].map(([k,l])=><label key={k}>{l}{['codigo','nombre','precioUnitario','stockMinimo'].includes(k)&&' *'}<input required={['codigo','nombre','precioUnitario','stockMinimo'].includes(k)} min={k==='precioUnitario'||k==='stockMinimo'?'0':undefined} step={k==='precioUnitario'?'0.01':undefined} type={['precioUnitario','stockMinimo'].includes(k)?'number':'text'} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}/>{invalid[k]&&<em>{invalid[k]}</em>}</label>)}<label>Unidad de medida *<select value={form.unidadMedida} onChange={e=>setForm({...form,unidadMedida:e.target.value})}>{['UNIDAD','CAJA','PAQUETE','KILOGRAMO','LITRO','METRO'].map(x=><option key={x}>{x}</option>)}</select></label><label>Proveedor *<select required value={form.proveedorId} onChange={e=>setForm({...form,proveedorId:e.target.value})}><option value="">Selecciona proveedor</option>{suppliers.map(p=><option key={p.id} value={p.id}>{p.razonSocial}</option>)}</select>{invalid.proveedorId&&<em>{invalid.proveedorId}</em>}</label><div className="form-actions"><button className="button primary" disabled={!suppliers.length}>{edit?'Guardar cambios':'Crear producto'}</button>{edit&&<button type="button" className="button secondary" onClick={()=>{setEdit(null);setForm(blankProduct)}}>Cancelar</button>}</div></form></section><section className="panel"><div className="panel-head"><div><small>INVENTARIO</small><h2>Productos activos</h2></div></div>{loading?<Loading error={error} retry={load}/>:<Table headers={['PRODUCTO','CATEGORÍA','PROVEEDOR','STOCK','MÍNIMO','']} empty={!items.length?'Aún no hay productos registrados.':''}>{items.map(p=><tr key={p.id}><td><b>{p.nombre}</b><small className="sub">{p.codigo}</small></td><td>{p.categoria||'—'}</td><td>{suppliers.find(x=>x.id===p.proveedorId)?.razonSocial||p.proveedorId}</td><td>{stock[p.id]??0}</td><td>{p.stockMinimo}</td><td className="actions"><button onClick={()=>{setEdit(p.id);setForm({...p,precioUnitario:String(p.precioUnitario),proveedorId:String(p.proveedorId)});scrollTo({top:0,behavior:'smooth'})}}>Editar</button><button className="danger" onClick={()=>deactivate(p.id)}>Desactivar</button></td></tr>)}</Table>}</section></>}
+function Products() {
+  const [items, setItems] = useState([]),
+    [suppliers, setSuppliers] = useState([]),
+    [stock, setStock] = useState({}),
+    [form, setForm] = useState(blankProduct),
+    [edit, setEdit] = useState(null),
+    [error, setError] = useState(""),
+    [ok, setOk] = useState(""),
+    [invalid, setInvalid] = useState({}),
+    [loading, setLoading] = useState(true);
+  const load = () => {
+    setLoading(true);
+    Promise.all([
+      api.get("/productos"),
+      api.get("/proveedores"),
+      api.get("/movimientos/stock"),
+    ])
+      .then(([p, v, s]) => {
+        setItems(p.data);
+        setSuppliers(v.data);
+        setStock(
+          Object.fromEntries(s.data.map((x) => [x.productoId, x.stockActual])),
+        );
+        setError("");
+      })
+      .catch((e) => setError(errText(e)))
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+  const save = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInvalid({});
+    const data = {
+      ...form,
+      precioUnitario: Number(form.precioUnitario),
+      stockMinimo: Number(form.stockMinimo),
+      proveedorId: Number(form.proveedorId),
+    };
+    try {
+      if (edit) await api.put(`/productos/${edit}`, data);
+      else await api.post("/productos", data);
+      setOk(edit ? "Producto actualizado." : "Producto creado.");
+      setEdit(null);
+      setForm(blankProduct);
+      load();
+    } catch (e) {
+      setError(errText(e));
+      setInvalid(errFields(e));
+    }
+  };
+  const deactivate = async (id) => {
+    if (!confirm("¿Desactivar este producto?")) return;
+    try {
+      await api.delete(`/productos/${id}`);
+      setOk("Producto desactivado.");
+      load();
+    } catch (e) {
+      setError(errText(e));
+    }
+  };
+  return (
+    <>
+      <Head eyebrow="CATÁLOGO" title="Productos">
+        <span className="pill">{items.length} activos</span>
+      </Head>
+      <Notice value={error} />
+      <Notice value={ok} success />
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <small>{edit ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}</small>
+            <h2>{edit ? "Actualizar producto" : "Agregar producto"}</h2>
+          </div>
+        </div>
+        <form className="form-grid" onSubmit={save}>
+          {[
+            ["codigo", "Código SKU"],
+            ["nombre", "Nombre"],
+            ["categoria", "Categoría"],
+            ["precioUnitario", "Precio unitario"],
+            ["stockMinimo", "Stock mínimo"],
+            ["descripcion", "Descripción"],
+          ].map(([k, l]) => (
+            <label key={k}>
+              {l}
+              {["codigo", "nombre", "precioUnitario", "stockMinimo"].includes(
+                k,
+              ) && " *"}
+              <input
+                required={[
+                  "codigo",
+                  "nombre",
+                  "precioUnitario",
+                  "stockMinimo",
+                ].includes(k)}
+                min={
+                  k === "precioUnitario" || k === "stockMinimo"
+                    ? "0"
+                    : undefined
+                }
+                step={k === "precioUnitario" ? "0.01" : undefined}
+                type={
+                  ["precioUnitario", "stockMinimo"].includes(k)
+                    ? "number"
+                    : "text"
+                }
+                value={form[k]}
+                onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+              />
+              {invalid[k] && <em>{invalid[k]}</em>}
+            </label>
+          ))}
+          <label>
+            Unidad de medida *
+            <select
+              value={form.unidadMedida}
+              onChange={(e) =>
+                setForm({ ...form, unidadMedida: e.target.value })
+              }
+            >
+              {["UNIDAD", "CAJA", "PAQUETE", "KILOGRAMO", "LITRO", "METRO"].map(
+                (x) => (
+                  <option key={x}>{x}</option>
+                ),
+              )}
+            </select>
+          </label>
+          <label>
+            Proveedor *
+            <select
+              required
+              value={form.proveedorId}
+              onChange={(e) =>
+                setForm({ ...form, proveedorId: e.target.value })
+              }
+            >
+              <option value="">Selecciona proveedor</option>
+              {suppliers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.razonSocial}
+                </option>
+              ))}
+            </select>
+            {invalid.proveedorId && <em>{invalid.proveedorId}</em>}
+          </label>
+          <div className="form-actions">
+            <button className="button primary" disabled={!suppliers.length}>
+              {edit ? "Guardar cambios" : "Crear producto"}
+            </button>
+            {edit && (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => {
+                  setEdit(null);
+                  setForm(blankProduct);
+                }}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+      </section>
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <small>INVENTARIO</small>
+            <h2>Productos activos</h2>
+          </div>
+        </div>
+        {loading ? (
+          <Loading error={error} retry={load} />
+        ) : (
+          <Table
+            headers={[
+              "PRODUCTO",
+              "CATEGORÍA",
+              "PROVEEDOR",
+              "STOCK",
+              "MÍNIMO",
+              "",
+            ]}
+            empty={!items.length ? "Aún no hay productos registrados." : ""}
+          >
+            {items.map((p) => (
+              <tr key={p.id}>
+                <td>
+                  <b>{p.nombre}</b>
+                  <small className="sub">{p.codigo}</small>
+                </td>
+                <td>{p.categoria || "—"}</td>
+                <td>
+                  {suppliers.find((x) => x.id === p.proveedorId)?.razonSocial ||
+                    p.proveedorId}
+                </td>
+                <td>{stock[p.id] ?? 0}</td>
+                <td>{p.stockMinimo}</td>
+                <td className="actions">
+                  <button
+                    onClick={() => {
+                      setEdit(p.id);
+                      setForm({
+                        ...p,
+                        precioUnitario: String(p.precioUnitario),
+                        proveedorId: String(p.proveedorId),
+                      });
+                      scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button className="danger" onClick={() => deactivate(p.id)}>
+                    Desactivar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </section>
+    </>
+  );
+}
 
-function Movements(){const [products,setProducts]=useState([]),[selected,setSelected]=useState(''),[history,setHistory]=useState([]),[stock,setStock]=useState(null),[form,setForm]=useState({productoId:'',tipo:'ENTRADA',cantidad:'',fecha:today(),observacion:''}),[error,setError]=useState(''),[ok,setOk]=useState(''),[invalid,setInvalid]=useState({});useEffect(()=>{api.get('/productos').then(r=>setProducts(r.data)).catch(e=>setError(errText(e)))},[]);const load=async id=>{if(!id){setStock(null);setHistory([]);return}try{const [h,s]=await Promise.all([api.get(`/movimientos/producto/${id}`),api.get(`/movimientos/producto/${id}/stock`)]);setHistory(h.data);setStock(s.data)}catch(e){setError(errText(e))}};useEffect(()=>{if(selected)load(selected)},[selected]);const save=async e=>{e.preventDefault();setError('');setInvalid({});try{await api.post('/movimientos',{...form,productoId:Number(form.productoId),cantidad:Number(form.cantidad),fecha:form.fecha||null});setOk('Movimiento registrado.');setForm({...form,cantidad:'',observacion:''});setSelected(form.productoId);await load(form.productoId)}catch(e){setError(errText(e));setInvalid(errFields(e))}};return <><Head eyebrow="KARDEX" title="Movimientos"><span className="pill">Historial inmutable</span></Head><Notice value={error}/><Notice value={ok} success/><div className="movement-grid"><section className="panel"><div className="panel-head"><div><small>REGISTRO DE STOCK</small><h2>Nuevo movimiento</h2></div></div><form className="form-grid one-col" onSubmit={save}><label>Producto *<select required value={form.productoId} onChange={e=>{setForm({...form,productoId:e.target.value});setSelected(e.target.value)}}><option value="">Selecciona producto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.nombre}</option>)}</select></label><label>Tipo de movimiento *<div className="segmented"><button type="button" className={form.tipo==='ENTRADA'?'selected':''} onClick={()=>setForm({...form,tipo:'ENTRADA'})}>↓ Entrada</button><button type="button" className={form.tipo==='SALIDA'?'selected':''} onClick={()=>setForm({...form,tipo:'SALIDA'})}>↑ Salida</button></div></label><label>Cantidad *<input required min="1" type="number" value={form.cantidad} onChange={e=>setForm({...form,cantidad:e.target.value})}/>{invalid.cantidad&&<em>{invalid.cantidad}</em>}</label><label>Fecha y hora<input type="datetime-local" value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})}/></label><label>Observación<textarea maxLength="255" rows="3" value={form.observacion} onChange={e=>setForm({...form,observacion:e.target.value})} placeholder="Motivo o referencia"/></label><button className="button primary">Registrar {form.tipo.toLowerCase()}</button></form></section><div>{stock&&<section className="stock-card"><small>STOCK ACTUAL</small><strong>{stock.stockActual}<small> unidades</small></strong><div><span>Entradas <b>{stock.totalEntradas}</b></span><span>Salidas <b>{stock.totalSalidas}</b></span></div>{stock.bajoMinimo&&<p>⚠ Bajo el mínimo de {stock.stockMinimo}</p>}</section>}<section className="panel"><div className="panel-head"><div><small>HISTORIAL</small><h2>Por producto</h2></div><select className="search" value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Selecciona producto</option>{products.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>{history.map(m=><div className="activity" key={m.id}><span className={`move ${m.tipo.toLowerCase()}`}>{m.tipo==='ENTRADA'?'↓':'↑'}</span><div><b>{m.tipo==='ENTRADA'?'Entrada':'Salida'} de {m.cantidad}</b><small>{new Date(m.fecha).toLocaleString('es-PE')} · {m.observacion||'Sin observación'}</small></div><strong className={m.tipo==='ENTRADA'?'positive':'negative'}>{m.tipo==='ENTRADA'?'+':'−'}{m.cantidad}</strong></div>)}{selected&&!history.length&&<p className="empty">Este producto aún no tiene movimientos.</p>}{!selected&&<p className="empty">Selecciona un producto para ver el historial.</p>}</section></div></div></>}
+function Movements() {
+  const [products, setProducts] = useState([]),
+    [selected, setSelected] = useState(""),
+    [history, setHistory] = useState([]),
+    [stock, setStock] = useState(null),
+    [form, setForm] = useState({
+      productoId: "",
+      tipo: "ENTRADA",
+      cantidad: "",
+      fecha: today(),
+      observacion: "",
+    }),
+    [error, setError] = useState(""),
+    [ok, setOk] = useState(""),
+    [invalid, setInvalid] = useState({});
+  useEffect(() => {
+    api
+      .get("/productos")
+      .then((r) => setProducts(r.data))
+      .catch((e) => setError(errText(e)));
+  }, []);
+  const load = async (id) => {
+    if (!id) {
+      setStock(null);
+      setHistory([]);
+      return;
+    }
+    try {
+      const [h, s] = await Promise.all([
+        api.get(`/movimientos/producto/${id}`),
+        api.get(`/movimientos/producto/${id}/stock`),
+      ]);
+      setHistory(h.data);
+      setStock(s.data);
+    } catch (e) {
+      setError(errText(e));
+    }
+  };
+  useEffect(() => {
+    if (selected) load(selected);
+  }, [selected]);
+  const save = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInvalid({});
+    try {
+      await api.post("/movimientos", {
+        ...form,
+        productoId: Number(form.productoId),
+        cantidad: Number(form.cantidad),
+        fecha: form.fecha || null,
+      });
+      setOk("Movimiento registrado.");
+      setForm({ ...form, cantidad: "", observacion: "" });
+      setSelected(form.productoId);
+      await load(form.productoId);
+    } catch (e) {
+      setError(errText(e));
+      setInvalid(errFields(e));
+    }
+  };
+  return (
+    <>
+      <Head eyebrow="KARDEX" title="Movimientos">
+        <span className="pill">Historial inmutable</span>
+      </Head>
+      <Notice value={error} />
+      <Notice value={ok} success />
+      <div className="movement-grid">
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <small>REGISTRO DE STOCK</small>
+              <h2>Nuevo movimiento</h2>
+            </div>
+          </div>
+          <form className="form-grid one-col" onSubmit={save}>
+            <label>
+              Producto *
+              <select
+                required
+                value={form.productoId}
+                onChange={(e) => {
+                  setForm({ ...form, productoId: e.target.value });
+                  setSelected(e.target.value);
+                }}
+              >
+                <option value="">Selecciona producto</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.codigo} · {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Tipo de movimiento *
+              <div className="segmented">
+                <button
+                  type="button"
+                  className={form.tipo === "ENTRADA" ? "selected" : ""}
+                  onClick={() => setForm({ ...form, tipo: "ENTRADA" })}
+                >
+                  ↓ Entrada
+                </button>
+                <button
+                  type="button"
+                  className={form.tipo === "SALIDA" ? "selected" : ""}
+                  onClick={() => setForm({ ...form, tipo: "SALIDA" })}
+                >
+                  ↑ Salida
+                </button>
+              </div>
+            </label>
+            <label>
+              Cantidad *
+              <input
+                required
+                min="1"
+                type="number"
+                value={form.cantidad}
+                onChange={(e) => setForm({ ...form, cantidad: e.target.value })}
+              />
+              {invalid.cantidad && <em>{invalid.cantidad}</em>}
+            </label>
+            <label>
+              Fecha y hora
+              <input
+                type="datetime-local"
+                value={form.fecha}
+                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+              />
+            </label>
+            <label>
+              Observación
+              <textarea
+                maxLength="255"
+                rows="3"
+                value={form.observacion}
+                onChange={(e) =>
+                  setForm({ ...form, observacion: e.target.value })
+                }
+                placeholder="Motivo o referencia"
+              />
+            </label>
+            <button className="button primary">
+              Registrar {form.tipo.toLowerCase()}
+            </button>
+          </form>
+        </section>
+        <div>
+          {stock && (
+            <section className="stock-card">
+              <small>STOCK ACTUAL</small>
+              <strong>
+                {stock.stockActual}
+                <small> unidades</small>
+              </strong>
+              <div>
+                <span>
+                  Entradas <b>{stock.totalEntradas}</b>
+                </span>
+                <span>
+                  Salidas <b>{stock.totalSalidas}</b>
+                </span>
+              </div>
+              {stock.bajoMinimo && (
+                <p>⚠ Bajo el mínimo de {stock.stockMinimo}</p>
+              )}
+            </section>
+          )}
+          <section className="panel">
+            <div className="panel-head">
+              <div>
+                <small>HISTORIAL</small>
+                <h2>Por producto</h2>
+              </div>
+              <select
+                className="search"
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+              >
+                <option value="">Selecciona producto</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {history.map((m) => (
+              <div className="activity" key={m.id}>
+                <span className={`move ${m.tipo.toLowerCase()}`}>
+                  {m.tipo === "ENTRADA" ? "↓" : "↑"}
+                </span>
+                <div>
+                  <b>
+                    {m.tipo === "ENTRADA" ? "Entrada" : "Salida"} de{" "}
+                    {m.cantidad}
+                  </b>
+                  <small>
+                    {new Date(m.fecha).toLocaleString("es-PE")} ·{" "}
+                    {m.observacion || "Sin observación"}
+                  </small>
+                </div>
+                <strong
+                  className={m.tipo === "ENTRADA" ? "positive" : "negative"}
+                >
+                  {m.tipo === "ENTRADA" ? "+" : "−"}
+                  {m.cantidad}
+                </strong>
+              </div>
+            ))}
+            {selected && !history.length && (
+              <p className="empty">Este producto aún no tiene movimientos.</p>
+            )}
+            {!selected && (
+              <p className="empty">
+                Selecciona un producto para ver el historial.
+              </p>
+            )}
+          </section>
+        </div>
+      </div>
+    </>
+  );
+}
 
-export default function App(){return <BrowserRouter><Layout/></BrowserRouter>}
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
+}
