@@ -1,0 +1,51 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: proveedores
+              uri: lb://proveedor-service
+              predicates:
+                - Path=/api/proveedores/**
+            - id: productos
+              uri: lb://producto-service
+              predicates:
+                - Path=/api/productos/**
+            - id: movimientos
+              uri: lb://movimiento-service
+              predicates:
+                - Path=/api/movimientos/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: http://localhost:5173
+                allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+                allowed-headers: '*'
+                allow-credentials: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
