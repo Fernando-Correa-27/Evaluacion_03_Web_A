@@ -27,7 +27,7 @@ El [diagrama Mermaid](docs/diagrama-microservicios.md) muestra siete procesos: t
 
 ## 5. Requisitos previos
 
-- JDK 17+ (`java -version`); se construyó con JDK 25.
+- JDK 25 (`java -version`); esa es la versión configurada en el proyecto.
 - Node.js 20+ y npm (`node -v`, `npm -v`); se preparó con Node 24.
 - MySQL 8.4 ejecutándose en `localhost:3306`.
 - Puertos libres: 8080, 8081, 8082, 8083, 8761, 8888 y 5173.
@@ -167,11 +167,11 @@ No se implementa autenticación. La lectura y escritura simultánea no usa bloqu
 - **Puerto ocupado:** `start-all.ps1` reporta el puerto y PID, pero no cierra procesos ajenos.
 - **Config Server no disponible:** su import es opcional para permitir pruebas unitarias; en ejecución completa debe responder en `:8888` antes de Eureka y los servicios.
 - **Eureka tarda:** espera a que los seis servicios respondan health; revisa `logs/eureka-server.log` y el panel `:8761`.
-- **Frontend en blanco:** recarga `http://localhost:8080/` o `http://localhost:5173/`; el cliente Axios usa `/api` y el arranque espera los registros UP de Eureka antes de iniciar la interfaz. Evidencia de diagnóstico: `docs/evidencias/correccion-interfaz.txt`.
-- **JAVA_HOME:** instala un JDK 17+ y comprueba `java -version` y `JAVA_HOME`; Maven Wrapper no requiere Maven global.
+- **Frontend en blanco:** abre o recarga `http://localhost:5173/`; revisa que Vite y los servicios estén activos. `localhost:8080` es el API Gateway. Evidencia de diagnóstico: `docs/evidencias/correccion-interfaz.txt`.
+- **JAVA_HOME:** instala un JDK 25 y comprueba `java -version` y `JAVA_HOME`; Maven Wrapper no requiere Maven global.
 
 ## Estado del entregable
 
-MySQL temporal 8.4.9 está activo en `127.0.0.1:3306`, con datos en `%TEMP%\codex-mysql-inventory-20261104`; el usuario de aplicación y contraseña residen únicamente en el `.env` local ignorado por Git. Para iniciar MySQL después de cerrar esta sesión, ejecuta `mysqld.exe` con ese directorio de datos, `--bind-address=127.0.0.1` y `--port=3306`. La instancia es temporal y no está registrada como servicio de Windows.
+La guía de instalación, configuración de MySQL, compilación, arranque, comprobación y cierre está en [docs/guia-ejecucion-local.md](docs/guia-ejecucion-local.md). Las credenciales se configuran localmente en `.env`, que está excluido de Git.
 
 La ejecución validada incluye build de frontend, 15 pruebas unitarias, smoke test completo, Newman (35 solicitudes, 65 aserciones y 0 fallos), Config Server, los cuatro clientes UP en Eureka, y arranque real de `producto-service` en perfiles dev, test y prod. Mermaid CLI 12.2.0 renderiza el diagrama PNG. Antes de presentar, el estudiante debe completar la sección, realizar sus capturas de Postman y revisar el borrador de conclusiones y sustentación.
